@@ -1,0 +1,10 @@
+For manual execution through the terminals:
+
+    In main directory: compile everything. all binaries go to /bin
+        $javac -d .\bin\ .\server\src\main\java\server\*.java .\client\src\main\java\client\*.java .\utils\src\main\java\remoteInterface\*.java
+
+    From main directory: One terminal for Server
+        $java -cp .\bin server.Server
+
+    From main directory: One terminal for Client
+        $java -cp .\bin client.Client
