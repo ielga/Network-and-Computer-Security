@@ -37,7 +37,7 @@
     <jaxb.version>2.3.0</jaxb.version>
 
     <!-- application properties - can be overriden in command line with -D -->
-    <mainclass>Client</mainclass>
+    <mainclass>ClientMain</mainclass>
     <clientHost>localhost</clientHost>
     <clientPort>9400</clientPort>
 

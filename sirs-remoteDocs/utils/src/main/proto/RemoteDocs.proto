@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "sirs.remoteDocs";
+
+service RemoteDocsService {
+  rpc registerUser(registerUserRequest) returns (registerUserResponse) {};
+}
+
+message registerUserRequest {
+ // string username = 1;
+ // string password = 2;
+}
+
+message registerUserResponse {
+  string userpass = 1;
+}

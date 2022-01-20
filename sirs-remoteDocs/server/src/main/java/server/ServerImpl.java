@@ -1,24 +1,30 @@
 package server;
 
-import remoteInterface.ServerInterface;
-import java.rmi.RemoteException;
-import java.sql.*;
+import io.grpc.stub.StreamObserver;
+import sirs.remoteDocs.registerUserRequest;
+import sirs.remoteDocs.registerUserResponse;
+import sirs.remoteDocs.RemoteDocsServiceGrpc.RemoteDocsServiceImplBase;
 
-public class ServerImpl implements ServerInterface {
 
-    DataBaseDriver db = new DataBaseDriver();
+public class ServerImpl extends RemoteDocsServiceImplBase {
+
+    DataBaseServer db;
 
     public ServerImpl() {
-        db = new DataBaseDriver();
+        db = new DataBaseServer();
     }
+
 
     @Override
-    public String getUsername() throws RemoteException {
-        return db.getUsername();
+    public void registerUser(registerUserRequest request,
+                             StreamObserver<registerUserResponse> responseObserver) {
+        String usernamePass = db.getUsername();
+
+        registerUserResponse response = registerUserResponse.newBuilder()
+                                        .setUserpass(usernamePass).build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
     }
 
-    @Override
-    public void sendDocument(String username, String doc) throws RemoteException {
-
-    }
 }

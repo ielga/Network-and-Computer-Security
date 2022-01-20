@@ -1,8 +1,10 @@
 package server;
 
+import DataBaseLib.Queries;
+
 import java.sql.*;
 
-public class DataBaseDriver {
+public class DataBaseServer {
     // JDBC driver name and database URL
     String jdbcDriver;
     String dbUrl;
@@ -10,9 +12,9 @@ public class DataBaseDriver {
     String dbServerUser;
     String dbServerPass;
     Connection conn = null;
-    Statement stmt = null;
 
-    public DataBaseDriver() {
+
+    public DataBaseServer() {
         //Register JDBC driver
         //Open a connection
         jdbcDriver = "com.mysql.cj.jdbc.Driver";
@@ -37,9 +39,11 @@ public class DataBaseDriver {
         String password = "";
         System.out.println("Creating statement...");
         try {
-            stmt = conn.createStatement();
-            String sql = "SELECT * FROM users";
-            ResultSet rs = stmt.executeQuery(sql);
+           // Statement stmt = conn.createStatement();
+           // String sql = "SELECT * FROM users";
+           //  ResultSet rs = stmt.executeQuery(sql);
+
+            ResultSet rs = Queries.getAllUsers(conn);
 
             //Extract data from result set
             while(rs.next()) {
