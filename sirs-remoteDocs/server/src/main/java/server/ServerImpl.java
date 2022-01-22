@@ -20,6 +20,8 @@ public class ServerImpl extends RemoteDocsServiceImplBase {
                              StreamObserver<registerUserResponse> responseObserver) {
         String usernamePass = db.getUsername();
 
+        System.out.println("Request: username" + request.getUsername() + "pass: " + request.getPassword());
+
         registerUserResponse response = registerUserResponse.newBuilder()
                                         .setUserpass(usernamePass).build();
 
