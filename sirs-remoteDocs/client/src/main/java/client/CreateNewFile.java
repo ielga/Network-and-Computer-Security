@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import static DataBaseLib.Messages.*;
 
 public class CreateNewFile extends JFrame {
     private JTextField txtReaders;
@@ -14,13 +14,17 @@ public class CreateNewFile extends JFrame {
     private JPanel UserFile;
     private JTextField txtWriters;
     private JTextField txowner;
-    public ArrayList<String> writerslist=new ArrayList<String>();
-    public ArrayList<String> readerslist=new ArrayList<String>();
+    private JTextField textFileName;
+    //public ArrayList<String> writerslist=new ArrayList<>();
+    //public ArrayList<String> readerslist=new ArrayList<>();
     public String fileContent;
+    public String fileName;
 
 
     public CreateNewFile(){
+        System.out.println("create New File");
         setContentPane(UserFile);
+        System.out.println("create New File1");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(450,300));
         setVisible(true);
@@ -32,20 +36,34 @@ public class CreateNewFile extends JFrame {
                 String owner = txowner.getText();
                 String writer_name = txtWriters.getText();
                 String reader_name = txtReaders.getText();
+                fileName = textFileName.getText();
                 fileContent = txtFileContent.getText();
 
-                if (writer_name != null) {
+                /*if (writer_name != null) {
                     writerslist.add(writer_name);
                 }
                 if (reader_name != null) {
                     readerslist.add(reader_name);
 
-                }
-                System.out.println(writerslist);
-                System.out.println(readerslist);
+                }*/
+                //System.out.println(writerslist);
+                //System.out.println(readerslist);
                 System.out.println(fileContent);
+                System.out.println(fileName);
 
-                File file = new File(owner,writerslist,readerslist);
+                //File file = new File(fileName,owner,writerslist,readerslist,fileContent);
+
+                /*
+                 String result = clientService.createDocument(owner, filename, content)
+                 clientService.Log("Create New File: ", result);
+                 if (result.equals(FILE_CREATED))
+                    // passa para o fileForm ou ao seguinte form
+                 else
+                    // nao consiguiu criar o ficheiro
+                */
+
+
+                dispose();
                 FileForm fileForm = new FileForm();
             }
         });
@@ -55,5 +73,9 @@ public class CreateNewFile extends JFrame {
 
             }
         });
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
     }
 }

@@ -18,7 +18,6 @@ public class ServerApp {
               Server server = ServerBuilder.forPort(8080)
                             .addService(new ServerImpl()).build(); */
 
-
             File CAsCertFile = new File("utils/src/main/resources/CACert.pem");   // CAfile
             File serverCertFile = new File("utils/src/main/resources/ServerCert.pem"); //certChainFile
             File serverKeyFile = new File("utils/src/main/resources/ServerKey.pem"); //privateKeyFile

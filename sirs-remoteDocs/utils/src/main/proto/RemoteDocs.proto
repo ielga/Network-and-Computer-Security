@@ -5,6 +5,13 @@ option java_package = "sirs.remoteDocs";
 
 service RemoteDocsService {
   rpc registerUser(registerUserRequest) returns (registerUserResponse) {};
+  rpc loginUser(loginUserRequest) returns (loginUserResponse) {};
+  rpc createDocument(createDocumentRequest) returns (createDocumentResponse) {};
+  rpc addDocumentContributor(addContributorRequest) returns (addContributorResponse) {};
+  rpc editDocumentContent(editDocContentRequest) returns (editDocContentResponse) {};
+  rpc editDocContributor(editDocumentContributorRequest) returns (editDocumentContributorResponse){};
+  rpc getContributorDocuments(getContributorDocumentsRequest) returns (stream getContributorDocumentsResponse) {};
+  rpc getOwnerDocuments(getOwnerDocumentsRequest) returns (stream getOwnerDocumentsResponse) {};
 }
 
 message registerUserRequest {
@@ -13,5 +20,71 @@ message registerUserRequest {
 }
 
 message registerUserResponse {
-  string userpass = 1;
+  string registerResponse = 1;
 }
+
+message loginUserRequest {
+  string username = 1;
+  string password = 2;
+}
+message loginUserResponse {
+  string loginResponse = 1;
+}
+
+message createDocumentRequest {
+  string owner = 1;
+  string filename = 2;
+  string content = 3;
+}
+message createDocumentResponse {
+  string createDocResponse = 1;
+}
+
+message addContributorRequest {
+  string usernameOwner = 1;
+  string usernameContributor = 2;
+  string filename = 3;
+  string permission = 4;
+}
+
+message addContributorResponse {
+  string addUserContributorResponse = 1;
+}
+
+message editDocContentRequest {
+  string owner = 1;
+  string filename = 2;
+  string contributor = 3;
+  string newContent = 4;
+}
+message editDocContentResponse {
+  string editDocumentResponse = 1;
+}
+message editDocumentContributorRequest {
+  string owner = 1;
+  string contributor = 2;
+  string filename = 3;
+}
+message editDocumentContributorResponse {
+  string editContributorResponse = 1;
+}
+
+message getContributorDocumentsRequest {
+  string contributor = 1;
+}
+
+message getContributorDocumentsResponse {
+  string owner = 1;
+  string filename = 2;
+  string permission = 3;
+}
+
+message getOwnerDocumentsRequest {
+  string owner = 1;
+}
+
+message getOwnerDocumentsResponse {
+  string filename = 2;
+}
+
+

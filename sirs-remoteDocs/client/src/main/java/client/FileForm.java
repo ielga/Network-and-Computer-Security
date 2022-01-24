@@ -10,9 +10,12 @@ import java.util.ArrayList;
 
 public class FileForm extends JFrame{
     private JList UsersFiles;
-    private JPanel PanelMain;
+    private JPanel PanelMain1;
     private JPanel Panel;
     private JButton createNewFileButton;
+    private JButton editFileButton;
+    private JButton logOutButton;
+    private JTextArea textContent;
     private JTextField textOwner;
     private JTextField textWriters;
     private JTextField textReaders;
@@ -25,7 +28,7 @@ public class FileForm extends JFrame{
     public File file2;
 
     public FileForm(){
-        setContentPane(PanelMain);
+        setContentPane(PanelMain1);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(450,300));
         setVisible(true);
@@ -41,6 +44,8 @@ public class FileForm extends JFrame{
         createNewFileButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //dispose();
+                System.out.println("button create new file");
                 CreateNewFile createNewFile = new CreateNewFile();
 
             }
@@ -51,41 +56,39 @@ public class FileForm extends JFrame{
                 int userID = UsersFiles.getSelectedIndex();
                 if (userID >= 0){
                     File f = filelist.get(userID);
-                    textOwner.setText(f.getOwner());
-                    //textWriters.setText(f.getWriters(userID));
-                    //textReaders.setText(f.getReaders());
+                    textOwner.setText(f.getFileName());
+                    textContent.setText(f.getContent());
 
                 }
-                // Go to bd
+            }
+        });
 
+        editFileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                EditFile editFile = new EditFile();
 
             }
         });
-        submitChangesButton.addActionListener(new ActionListener() {
+        logOutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String owner = textOwner.getText();
-                String writer_name = textWriters.getText();
-                String reader_name = textReaders.getText();
-
-                //Mandar a nova lista para o Server
-
-
+                dispose();
+                //Login login = new Login();
             }
         });
     }
     public void refreshUserList(){
-        // vai mudar pq tenho de ir buscar coisas a BD
         System.out.println("refresh");
-        file = new File("ana",writerslist,readerslist);
-        file2 = new File("Diana",writerslist,readerslist);
+        file = new File("a","ana",writerslist,readerslist,"abc");
+        file2 = new File("b","Diana",writerslist,readerslist,"def");
         filelist.add(file);
         filelist.add(file2);
 
         for(File l: filelist){
             System.out.println("cheguei");
             System.out.println(l.getOwner());
-            fileListModel.addElement(l.getOwner());
+            fileListModel.addElement(l.getFileName());
         }
     }
 }

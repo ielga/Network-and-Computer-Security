@@ -1,8 +1,12 @@
 package server;
 
 import DataBaseLib.Queries;
+import sirs.remoteDocs.getContributorDocumentsResponse;
 
+import javax.xml.transform.Result;
 import java.sql.*;
+
+import static DataBaseLib.Messages.*;
 
 public class DataBaseServer {
     // JDBC driver name and database URL
@@ -14,7 +18,7 @@ public class DataBaseServer {
     Connection conn = null;
 
 
-    public DataBaseServer() {
+    public  DataBaseServer() {
         //Register JDBC driver
         //Open a connection
         jdbcDriver = "com.mysql.cj.jdbc.Driver";
@@ -29,33 +33,61 @@ public class DataBaseServer {
             System.out.println("Connected database successfully...");
         } catch (
         SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
+            System.out.println(DATABASE_INIT_ERROR);
         }
     }
 
-    public String getUsername() {
-        //Execute a query
-        String username = "";
-        String password = "";
-        System.out.println("Creating statement...");
+    public String registerUser(String username, String password) {
+        System.out.println("Creating registerUser Statement!");
+
+        try{
+            return Queries.registerUser(conn, username, password);
+        }catch (Exception e){
+            return REGISTER_ERROR;
+        }
+    }
+
+    public String loginUser(String username, String password){
+        System.out.println("Creating loginUser Statement!");
+        try{
+            return Queries.loginUser(conn, username, password);
+        }catch (Exception e){
+           return LOGIN_ERROR;
+        }
+    }
+
+    public String createDocument(String owner, String filename, String content){
+        try{
+            return Queries.createDocument(conn, owner, filename, content);
+        }catch (Exception e){
+            return CREATE_DOCUMENT_ERROR;
+        }
+    }
+
+    public String addDocumentContributor(String owner, String contributor, String filename, String permission){
+        try{
+            return Queries.addDocumentContributor(conn, owner, contributor, filename, permission);
+        }catch (Exception e){
+            return ADD_CONTRIBUTOR_ERROR;
+        }
+    }
+
+    public String editDocumentContent(String filename, String contributor, String owner, String newContent){
         try {
-           // Statement stmt = conn.createStatement();
-           // String sql = "SELECT * FROM users";
-           //  ResultSet rs = stmt.executeQuery(sql);
-
-            ResultSet rs = Queries.getAllUsers(conn);
-
-            //Extract data from result set
-            while(rs.next()) {
-                // Retrieve by column name
-                username  = rs.getString("username");
-                password = rs.getString("password");
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
+            return Queries.editDocumentContent(conn, filename, contributor, owner, newContent);
+        }catch (Exception e){
+            return EDIT_CONTENT_ERROR;
         }
-        return username + ": " + password;
     }
+
+
+    public ResultSet getContributorDocuments(String contributor) {
+        return Queries.getContributorDocuments(conn, contributor);
+    }
+
+    public ResultSet getOwnerDocuments(String owner) {
+        return Queries.getOwnerDocuments(conn, owner);
+    }
+
 
 }
