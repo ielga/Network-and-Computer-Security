@@ -15,10 +15,9 @@ public class Register extends JFrame{
     private JLabel txtPassword;
     private JPasswordField textconfirmp;
     private JLabel txtConfirmPassword;
-    public static ClientService clientService;
 
-    public Register() {
-        dispose();
+
+    public Register(ClientService clientService) {
         setContentPane(Register);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(450,300));
@@ -31,16 +30,16 @@ public class Register extends JFrame{
                 String userName = textUserName.getText();
                 String password = String.valueOf(textPassword.getPassword());
                 String confirmPassword = String.valueOf(textconfirmp.getPassword());
+                dispose();
 
                 String result = clientService.registerUser(userName,password, confirmPassword);
                 System.out.println("Passwords: " + password + " --- " + confirmPassword);
                 clientService.Log("Register: ", result);
 
                 if (result.equals(MISMATCHED_PASSWORD) || result.equals(WRONG_PASSWORD_SYNTAX)) {
-                    // Fazer um print na interface do user que a pass esta errada?
-                    System.out.println("alo esta errado");
+                    JOptionPane.showMessageDialog(null,"Wrong Credentials");
                     dispose();
-                    Register register = new Register();
+                    Register register = new Register(clientService);
                 } else {
                     dispose();
                     Login login = new Login(clientService);
@@ -49,12 +48,6 @@ public class Register extends JFrame{
             }
         });
     }
-
-    public static void main(String args[]){
-        clientService = new ClientService();
-        Register user = new Register();
-    }
-
 
     private void createUIComponents() {
         // TODO: place custom component creation code here

@@ -20,11 +20,12 @@ public class Messages {
     public static final String USER_DOES_NOT_HAVE_PERMISSION = "User does not have permission to edit file!";
     public static final String CONTENT_UPDATED = "The content was updated!";
     public static final String EDIT_CONTENT_ERROR = "Error updating content!";
-    public static final String EDIT_CONTENT_INVALID_INPUTS = "Can not edit content, invalid inputs!";
+    public static final String EDIT_CONTENT_DENIED = "Can not edit content!";
     public static final String EDIT_FILE_CONTRIBUTOR_ERROR = "Error editing file contributor!";
     public static final String EDIT_CONTRIBUTOR_SUCESS = "Contributor has been removed!";
     public static final String DATABASE_INIT_ERROR = "Error initializing database!";
     public static final String EMPTY_USERNAME_OR_FILENAME = "Username and/or Filename can't be empty!";
     public static final String RETRIEVING_DOCUMENT_INFO_ERROR = "An error has occurred when retrieving documents!";
     public static final String OK = "OK!";
+    public static final String ADD_CONTRIBUTOR_DENIED = "Only Owners can add contributors to files!";
 }

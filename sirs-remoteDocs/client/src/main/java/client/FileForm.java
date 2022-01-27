@@ -10,25 +10,24 @@ import java.util.ArrayList;
 
 public class FileForm extends JFrame{
     private JList UsersFiles;
-    private JPanel PanelMain1;
+    private JPanel PanelMain12;
     private JPanel Panel;
     private JButton createNewFileButton;
     private JButton editFileButton;
     private JButton logOutButton;
     private JTextArea textContent;
     private JTextField textOwner;
+    private JButton shareFileButton;
     private JTextField textWriters;
     private JTextField textReaders;
     private JButton submitChangesButton;
     private ArrayList<File> filelist;
     private DefaultListModel fileListModel;
-    public ArrayList<String> writerslist=new ArrayList<String>();
-    public ArrayList<String> readerslist=new ArrayList<String>();
     public File file;
     public File file2;
 
-    public FileForm(){
-        setContentPane(PanelMain1);
+    public FileForm(ClientService clientService){
+        setContentPane(PanelMain12);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(450,300));
         setVisible(true);
@@ -38,15 +37,13 @@ public class FileForm extends JFrame{
         fileListModel = new DefaultListModel();
         UsersFiles.setModel(fileListModel);
 
-        writerslist.add("ANA");
-        readerslist.add("Fatima");
         refreshUserList();
         createNewFileButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //dispose();
                 System.out.println("button create new file");
-                CreateNewFile createNewFile = new CreateNewFile();
+                CreateNewFile createNewFile = new CreateNewFile(clientService);
 
             }
         });
@@ -56,7 +53,7 @@ public class FileForm extends JFrame{
                 int userID = UsersFiles.getSelectedIndex();
                 if (userID >= 0){
                     File f = filelist.get(userID);
-                    textOwner.setText(f.getFileName());
+                    textOwner.setText(f.getOwner());
                     textContent.setText(f.getContent());
 
                 }
@@ -66,28 +63,36 @@ public class FileForm extends JFrame{
         editFileButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                EditFile editFile = new EditFile();
-
+                dispose();
+                EditFile editFile = new EditFile(clientService);
             }
         });
         logOutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 dispose();
-                //Login login = new Login();
+                ClientApp clientApp = new ClientApp();
+            }
+        });
+        shareFileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                ShareFile shareFile = new ShareFile(clientService);
             }
         });
     }
     public void refreshUserList(){
         System.out.println("refresh");
-        file = new File("a","ana",writerslist,readerslist,"abc");
-        file2 = new File("b","Diana",writerslist,readerslist,"def");
+        // mandar o username e devolver os ficheiros desse user name;
+        // adicionar os files a filelist
+        //
+        file = new File("a","ana","abc");
+        file2 = new File("b","Diana","def");
         filelist.add(file);
         filelist.add(file2);
 
         for(File l: filelist){
-            System.out.println("cheguei");
-            System.out.println(l.getOwner());
             fileListModel.addElement(l.getFileName());
         }
     }

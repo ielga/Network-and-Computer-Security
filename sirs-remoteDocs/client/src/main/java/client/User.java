@@ -1,20 +1,25 @@
 package client;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class User {
     public String username; // we have to save it encrypted
     // public String password;  // maybe we dont even need to save the password
     public boolean loggedIn;
-    public List<String> userOwnerFiles;
-    public List<FileAsContributor> filesAsContributor;
+    public List<String> userOwnerFiles = new ArrayList<>();
+    public List<FileAsContributor> filesAsContributor = new ArrayList<>();
+
 
     public User(String username) {
         this.username = username;
       //  this.password = password;
         this.loggedIn = false;
     }
+    public  User(){
+    }
+
 
     public void logIn() {
         this.loggedIn = true;

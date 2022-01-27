@@ -8,6 +8,9 @@ import io.grpc.netty.GrpcSslContexts;
 import sirs.remoteDocs.RemoteDocsServiceGrpc;
 import sirs.remoteDocs.*;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,13 +24,17 @@ public class ClientService {
     private static final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,20}$"; /* (?=.*[!@#&()–[{}]:;',?/*~$^+=<>]) - Special characters */
     private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
 
+
+
     private User loggedInUser;
+    public String user_owner;
+
 
 
     public ClientService() {
-        File CAsCertFile = new File("utils/src/main/resources/CACert.pem");
-        File clientCertFile = new File("utils/src/main/resources/UserCert.pem");
-        File clientKeyFile = new File("utils/src/main/resources/UserKey.pem");
+        File CAsCertFile = new File("sirs-remoteDocs/utils/src/main/resources/CACert.pem");
+        File clientCertFile = new File("sirs-remoteDocs/utils/src/main/resources/UserCert.pem");
+        File clientKeyFile = new File("sirs-remoteDocs/utils/src/main/resources/UserKey.pem");
 
         try {
 
@@ -92,17 +99,27 @@ public class ClientService {
         try {
             RemoteDocsServiceGrpc.RemoteDocsServiceBlockingStub serviceBlockingStub = RemoteDocsServiceGrpc.newBlockingStub(managedChannel);
 
+            MessageDigest algorithm = MessageDigest.getInstance("SHA-256");
+            byte[] messageDigest = algorithm.digest(password.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : messageDigest) {
+                sb.append(String.format("%02x", b));
+            }
+
             loginUserRequest request = loginUserRequest.newBuilder()
-                                        .setUsername(username).setPassword(password)
+                                        .setUsername(username).setPassword(sb.toString())
                                         .build();
             loginUserResponse response = serviceBlockingStub.loginUser(request);
 
             String responseMessage = response.getLoginResponse();
 
             Log("ClientService: Login - ", responseMessage);
+            user_owner = username;
 
             if(responseMessage.equals(USER_LOGGED)) {
                 this.loggedInUser = new User(username);
+
+
             }
 
             return responseMessage;
@@ -131,8 +148,9 @@ public class ClientService {
 
                 if (responseMessage.equals(FILE_CREATED)) {
                     this.loggedInUser.addFileAsOwner(filename);
-                }
 
+                }
+                System.out.println("Return ClientService; " + responseMessage);
                 return responseMessage;
             }
             else {
@@ -152,7 +170,7 @@ public class ClientService {
 
                 addContributorRequest request = addContributorRequest.newBuilder()
                                                 .setUsernameOwner(owner).setUsernameContributor(contributor)
-                                                .setFilename(filename).setPermission(permission)
+                                                .setFilename(filename).setPermission(permission).setLoggedInUserName(user_owner)
                                                 .build();
                 addContributorResponse response = serviceBlockingStub.addDocumentContributor(request);
 
@@ -160,6 +178,7 @@ public class ClientService {
 
                 Log("ClientService: Add Document Contributor - ", responseMessage);
 
+                System.out.println(responseMessage);
                 return responseMessage;
             }
             else {
@@ -171,7 +190,6 @@ public class ClientService {
         shutDown();
         return null;
     }
-
 
     public String editDocumentContent(String filename, String contributor, String owner, String newContent){
         try {
@@ -185,10 +203,23 @@ public class ClientService {
                 editDocContentResponse response = serviceBlockingStub.editDocumentContent(request);
 
                 String responseMessage = response.getEditDocumentResponse();
+                if(responseMessage.equals(CONTENT_UPDATED)){
+                    Log("ClientService: Edit Document Content - ", responseMessage);
+                    return responseMessage;
+                }
+                else if (responseMessage.equals(USER_DOES_NOT_HAVE_PERMISSION)){
+                    Log("ClientService: Edit Document Content - ", responseMessage);
 
-                Log("ClientService: Edit Document Content - ", responseMessage);
-
-                return responseMessage;
+                    return responseMessage;
+                }
+                else if (responseMessage.equals(EDIT_CONTENT_DENIED)){
+                    Log("ClientService: Edit Document Content - ", responseMessage);
+                    return responseMessage;
+                }
+                else{
+                    Log("ClientService: Edit Document Content -", "An internal error has occured!");
+                    return responseMessage;
+                }
             }
             else {
                 return EMPTY_USERNAME_OR_FILENAME;
@@ -197,6 +228,49 @@ public class ClientService {
             e.printStackTrace();
         }
         shutDown();
+        return null;
+    }
+    // erro
+    public String getContributorDocuments(String contributor) {
+        try {
+            if (!contributor.isEmpty()) {
+                RemoteDocsServiceGrpc.RemoteDocsServiceBlockingStub serviceBlockingStub = RemoteDocsServiceGrpc.newBlockingStub(managedChannel);
+
+                getContributorDocumentsRequest request = getContributorDocumentsRequest.newBuilder()
+                                                        .setContributor(contributor)
+                                                        .build();
+
+                Iterator <getContributorDocumentsResponse> responseIterator = serviceBlockingStub.getContributorDocuments(request);
+                while(responseIterator.hasNext()){
+
+                    getContributorDocumentsResponse response = responseIterator.next();
+                    String owner = response.getOwner() ;
+                    String filename = response.getFilename();
+                    String permission = response.getPermission();
+                    loggedInUser.addFileAsContributor(owner,filename,permission);
+                }
+                // why?
+
+
+                //getContributorDocumentsResponse response = serviceBlockingStub.getContributorDocuments(request);
+
+                //String responseMessage = response.getContributorDocumentsResponse();
+
+                //Log("ClientService: Edit Document Content - ", responseMessage);
+
+                //return responseMessage;
+            }
+            else {
+                return EMPTY_USERNAME_OR_FILENAME;
+            }
+        } catch (Exception e)  {
+            e.printStackTrace();
+        }
+        shutDown();
+        return null;
+    }
+
+    public String getOwnerDocuments() {
         return null;
     }
 
@@ -221,6 +295,10 @@ public class ClientService {
         */
         Matcher matcher = pattern.matcher(password);
         return matcher.matches();
+    }
+
+    public String getLoggedInUser() {
+        return user_owner;
     }
 
 }

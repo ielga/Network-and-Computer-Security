@@ -41,9 +41,9 @@ public class ServerImpl extends RemoteDocsServiceImplBase {
     public void createDocument(createDocumentRequest request,
                                StreamObserver<createDocumentResponse> responseObserver){
         String res = db.createDocument(request.getOwner(), request.getFilename(), request.getContent());
-        //createDocumentResponse response = createDocumentResponse.newBuilder()
-               // .setCreatedocresponse(res).build();
-        //responseObserver.onNext(response);
+        createDocumentResponse response = createDocumentResponse.newBuilder()
+               .setCreateDocResponse(res).build();
+        responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
 
@@ -51,7 +51,7 @@ public class ServerImpl extends RemoteDocsServiceImplBase {
     public void addDocumentContributor(addContributorRequest request,
                                        StreamObserver<addContributorResponse> responseObserver){
         String res = db.addDocumentContributor(request.getUsernameOwner(), request.getUsernameContributor(),
-                request.getFilename(), request.getPermission());
+                request.getFilename(), request.getPermission(), request.getLoggedInUserName());
         addContributorResponse response = addContributorResponse.newBuilder().
                 setAddUserContributorResponse(res).build();
         responseObserver.onNext(response);

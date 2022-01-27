@@ -12,7 +12,8 @@ public class Login extends JFrame{
     private JTextField textUserName;
     private JPasswordField textPassword;
     private JButton loginButton;
-    
+    public String userName;
+
     public Login(ClientService clientService){
         setContentPane(Login1);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -23,28 +24,30 @@ public class Login extends JFrame{
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String UserName = textUserName.getText();
+                userName = textUserName.getText();
                 String UserPassword = String.valueOf(textPassword.getPassword());
-                //int canLogin = clientmain.login(username,password)
-                // if(canLogin == 1) --> fileForm
-                //if(canLogin == 2) ---> Wrong inputs, Try again with a message
-                String result = clientService.loginUser(UserName, UserPassword);
+                String result = clientService.loginUser(userName, UserPassword);
                 clientService.Log("Login: ", result);
 
-                if (result.equals(LOGIN_ERROR)) {
-                    // alguma coisa estava errada
-                    // voltar a fazer load do login form
+                if (result.equals(WRONG_PASSWORD) || result.equals(WRONG_USERNAME)) {
+                    System.out.println("Wrong Credentials");
+                    dispose();
+                    Login login = new Login(clientService);
                 }
                 else {
-                    // passa para a seguinte form de Files
+                    System.out.println("login");
+                    dispose();
+                    FileForm fileForm = new FileForm(clientService);
                 }
 
-                System.out.println("login");
-                dispose();
-                FileForm fileForm = new FileForm();
+
 
             }
         });
+    }
+
+    public String getUserName() {
+        return userName;
     }
 
 }

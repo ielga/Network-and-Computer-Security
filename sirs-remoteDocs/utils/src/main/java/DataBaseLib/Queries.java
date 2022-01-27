@@ -60,45 +60,54 @@ public class Queries {
     public  static String createDocument(Connection conn, String owner, String filename, String content){
 
         try{
-
+            System.out.println("CreateDocument: " + owner + filename + content);
             PreparedStatement stmt_doc =
                     conn.prepareStatement("INSERT INTO `remoteDocsDB`.`docs`(owner, filename, content) VALUES (?, ?, ?)");
             stmt_doc.setString(1, owner);
             stmt_doc.setString(2, filename);
             stmt_doc.setString(3, content);
+            System.out.println("CreateDoc Query Executed!");
             stmt_doc.execute();
+            System.out.println("Lets see it!");
 
             return FILE_CREATED;
         }catch (SQLException e){
+                System.out.println("");
             return CREATE_DOCUMENT_ERROR;
         }
     }
 
     public static String addDocumentContributor(Connection conn, String userOwner, String userContributorName,
-                                                String filename, String permission){
+                                                String filename, String permission, String loggedInUser){
         try{
-            PreparedStatement stmt = conn.prepareStatement("SELECT owner FROM `remoteDocsDB`.`docs` where owner = ? and filename = ? ");
-            stmt.setString(1, userOwner);
-            stmt.setString(2, filename);
-            ResultSet rs;
 
-            if(stmt.executeQuery().next() ){
-                stmt = conn.prepareStatement("SELECT username FROM `remoteDocsDB`.`users` where username = ?");
-                stmt.setString(1, userContributorName);
+            if(userOwner.equals(loggedInUser)){
+                PreparedStatement stmt = conn.prepareStatement("SELECT owner FROM `remoteDocsDB`.`docs` where owner = ? and filename = ? ");
+                stmt.setString(1, userOwner);
+                stmt.setString(2, filename);
+                ResultSet rs;
 
-                if(stmt.executeQuery().next()){
-                    stmt = conn.prepareStatement("INSERT INTO `remoteDocsDB`.`usersDocs`(contributor,owner,filename, permission) " +
-                            "VALUES(?, ?, ?, ?)");
+                if(stmt.executeQuery().next() ){
+                    stmt = conn.prepareStatement("SELECT username FROM `remoteDocsDB`.`users` where username = ?");
                     stmt.setString(1, userContributorName);
-                    stmt.setString(2, userOwner);
-                    stmt.setString(3, filename);
-                    stmt.setString(4, permission);
-                    stmt.execute();
-                    return CONTRIBUTOR_WAS_ADDED;
+
+                    if(stmt.executeQuery().next()){
+
+                        stmt = conn.prepareStatement("INSERT INTO `remoteDocsDB`.`usersDocs`(contributor,owner,filename, permission) " +
+                                "VALUES(?, ?, ?, ?)");
+                        stmt.setString(1, userContributorName);
+                        stmt.setString(2, userOwner);
+                        stmt.setString(3, filename);
+                        stmt.setString(4, permission);
+                        stmt.execute();
+                        return CONTRIBUTOR_WAS_ADDED;
+                    }
+                    return CONTRIBUTOR_DOES_NOT_EXIST;
                 }
-                return CONTRIBUTOR_DOES_NOT_EXIST;
+                return FILE_OR_OWNER_DOES_NOT_EXIST;
             }
-            return FILE_OR_OWNER_DOES_NOT_EXIST;
+            return ADD_CONTRIBUTOR_DENIED;
+
         }catch (SQLException e){
             return ADD_CONTRIBUTOR_ERROR;
         }
@@ -113,7 +122,7 @@ public class Queries {
             owner_stmt.setString(1, filename);
             owner_stmt.setString(2, contributor);
 
-            if(owner_stmt.execute()){
+            if(owner_stmt.executeQuery().next()){
                 owner_stmt = conn.prepareStatement("UPDATE `remoteDocsDB`.`docs` SET content = ? where  filename = ? and owner = ? ");
                 owner_stmt.setString(1, newContent);
                 owner_stmt.setString(2, filename);
@@ -141,7 +150,7 @@ public class Queries {
                     }
                     return USER_DOES_NOT_HAVE_PERMISSION;
                 }
-                return EDIT_CONTENT_INVALID_INPUTS;
+                return EDIT_CONTENT_DENIED;
             }
         }catch (Exception e){
             return EDIT_CONTENT_ERROR;

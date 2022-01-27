@@ -36,6 +36,7 @@ message createDocumentRequest {
   string filename = 2;
   string content = 3;
 }
+
 message createDocumentResponse {
   string createDocResponse = 1;
 }
@@ -45,6 +46,7 @@ message addContributorRequest {
   string usernameContributor = 2;
   string filename = 3;
   string permission = 4;
+  string loggedInUserName = 5;
 }
 
 message addContributorResponse {
@@ -64,6 +66,7 @@ message editDocumentContributorRequest {
   string owner = 1;
   string contributor = 2;
   string filename = 3;
+
 }
 message editDocumentContributorResponse {
   string editContributorResponse = 1;

@@ -64,9 +64,9 @@ public class DataBaseServer {
         }
     }
 
-    public String addDocumentContributor(String owner, String contributor, String filename, String permission){
+    public String addDocumentContributor(String owner, String contributor, String filename, String permission, String loggedInUser){
         try{
-            return Queries.addDocumentContributor(conn, owner, contributor, filename, permission);
+            return Queries.addDocumentContributor(conn, owner, contributor, filename, permission, loggedInUser);
         }catch (Exception e){
             return ADD_CONTRIBUTOR_ERROR;
         }
