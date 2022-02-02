@@ -12,11 +12,15 @@ service RemoteDocsService {
   rpc editDocContributor(editDocumentContributorRequest) returns (editDocumentContributorResponse){};
   rpc getContributorDocuments(getContributorDocumentsRequest) returns (stream getContributorDocumentsResponse) {};
   rpc getOwnerDocuments(getOwnerDocumentsRequest) returns (stream getOwnerDocumentsResponse) {};
+  rpc getDocumentContent(getDocumentContentRequest) returns (getDocumentContentResponse) {};
+  rpc getOwnerReadAndWriteKey(getOwnerReadAndWriteKeyRequest) returns (getOwnerReadAndWriteKeyResponse) {};
+  rpc getContributorPublicKey(getContributorPublicKeyRequest) returns (getContributorPublicKeyResponse) {};
 }
 
 message registerUserRequest {
   string username = 1;
   string password = 2;
+  bytes publicKey = 3;
 }
 
 message registerUserResponse {
@@ -27,6 +31,7 @@ message loginUserRequest {
   string username = 1;
   string password = 2;
 }
+
 message loginUserResponse {
   string loginResponse = 1;
 }
@@ -35,10 +40,33 @@ message createDocumentRequest {
   string owner = 1;
   string filename = 2;
   string content = 3;
+  bytes ownerReadKey = 4;
+  bytes ownerWriteKey = 5;
 }
 
 message createDocumentResponse {
   string createDocResponse = 1;
+}
+
+message getDocumentContentRequest {
+  string filename = 1;
+  string owner = 2;
+  string username = 3;
+}
+
+message getDocumentContentResponse {
+  string content = 1;
+  bytes readKey = 2;
+  bytes writeKey = 3;
+}
+
+
+message getContributorPublicKeyRequest {
+  string contributor = 1;
+}
+
+message getContributorPublicKeyResponse {
+  bytes contributorPublicKey = 1;
 }
 
 message addContributorRequest {
@@ -47,6 +75,8 @@ message addContributorRequest {
   string filename = 3;
   string permission = 4;
   string loggedInUserName = 5;
+  bytes contributorReadKey = 6;
+  bytes contributorWriteKey = 7;
 }
 
 message addContributorResponse {
@@ -59,9 +89,20 @@ message editDocContentRequest {
   string contributor = 3;
   string newContent = 4;
 }
+
+message getOwnerReadAndWriteKeyRequest{
+  string owner = 1;
+  string filename = 2;
+}
+
+message getOwnerReadAndWriteKeyResponse{
+  bytes ownerReadKey = 1;
+  bytes ownerWriteKey = 2;
+}
 message editDocContentResponse {
   string editDocumentResponse = 1;
 }
+
 message editDocumentContributorRequest {
   string owner = 1;
   string contributor = 2;

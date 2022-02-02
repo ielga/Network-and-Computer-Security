@@ -4,20 +4,22 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import static DataBaseLib.Messages.*;
 
-public class Login extends JFrame{
-    private JPanel Login1;
+public class Login extends JFrame {
+    private JPanel Login;
     private JLabel UserLogin;
     private JTextField textUserName;
     private JPasswordField textPassword;
     private JButton loginButton;
     public String userName;
 
-    public Login(ClientService clientService){
-        setContentPane(Login1);
+    public Login(ClientService clientService) {
+
+        setContentPane(Login);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(450,300));
+        setMinimumSize(new Dimension(450, 300));
         setVisible(true);
         pack();
 
@@ -29,25 +31,18 @@ public class Login extends JFrame{
                 String result = clientService.loginUser(userName, UserPassword);
                 clientService.Log("Login: ", result);
 
-                if (result.equals(WRONG_PASSWORD) || result.equals(WRONG_USERNAME)) {
-                    System.out.println("Wrong Credentials");
+                if (result.equals(WRONG_PASSWORD) || result.equals(WRONG_USERNAME) || result.equals(LOGIN_ERROR)) {
                     dispose();
                     Login login = new Login(clientService);
-                }
-                else {
-                    System.out.println("login");
+                } else {
                     dispose();
                     FileForm fileForm = new FileForm(clientService);
                 }
-
-
 
             }
         });
     }
 
-    public String getUserName() {
-        return userName;
-    }
+
 
 }

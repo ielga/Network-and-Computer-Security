@@ -5,14 +5,17 @@ package client;
 public class File {
     private String fileName;
     private String owner;
-    private String content;
+    private String permission;
 
 
 
-    public File(String fileName, String owner,  String content){
+    public File(String fileName, String owner,  String permission){
         this.fileName = fileName;
         this.owner    =  owner;
-        this.content  = content;
+        this.permission  = permission;
+    }
+
+    public File(String filepath) {
     }
 
     public String getOwner() {
@@ -31,12 +34,12 @@ public class File {
         this.fileName = fileName;
     }
 
-    public String getContent() {
-        return content;
+    public String getPermission() {
+        return permission;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setContent(String permission) {
+        this.permission = permission;
     }
 
 

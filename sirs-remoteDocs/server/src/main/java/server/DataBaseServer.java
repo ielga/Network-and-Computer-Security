@@ -1,12 +1,14 @@
 package server;
 
 import DataBaseLib.Queries;
+import ServerLib.ContentInfo;
 import sirs.remoteDocs.getContributorDocumentsResponse;
 
 import javax.xml.transform.Result;
 import java.sql.*;
 
 import static DataBaseLib.Messages.*;
+import static ServerLib.ContentInfo.*;
 
 public class DataBaseServer {
     // JDBC driver name and database URL
@@ -37,11 +39,11 @@ public class DataBaseServer {
         }
     }
 
-    public String registerUser(String username, String password) {
+    public String registerUser(String username, String password, byte[] publicKey) {
         System.out.println("Creating registerUser Statement!");
 
         try{
-            return Queries.registerUser(conn, username, password);
+            return Queries.registerUser(conn, username, password,publicKey);
         }catch (Exception e){
             return REGISTER_ERROR;
         }
@@ -56,17 +58,25 @@ public class DataBaseServer {
         }
     }
 
-    public String createDocument(String owner, String filename, String content){
+    public String createDocument(String owner, String filename, String content, byte[] ownerReadKey, byte[] ownerWriteKey){
         try{
-            return Queries.createDocument(conn, owner, filename, content);
+            return Queries.createDocument(conn, owner, filename, content,ownerReadKey, ownerWriteKey);
         }catch (Exception e){
             return CREATE_DOCUMENT_ERROR;
         }
     }
 
-    public String addDocumentContributor(String owner, String contributor, String filename, String permission, String loggedInUser){
+    public ResultSet getOwnerWriteAndReadKey(String owner, String filename){
+            return Queries.getOwnerWriteAndReadKey(conn, owner, filename);
+
+    }
+
+
+    public String addDocumentContributor(String owner, String contributor, String filename, String permission,
+                                         String loggedInUser, byte[] contributorReadKey, byte[] contributorWriteKey){
         try{
-            return Queries.addDocumentContributor(conn, owner, contributor, filename, permission, loggedInUser);
+            return Queries.addDocumentContributor(conn, owner, contributor, filename, permission,
+                                                    loggedInUser, contributorReadKey, contributorWriteKey);
         }catch (Exception e){
             return ADD_CONTRIBUTOR_ERROR;
         }
@@ -87,6 +97,15 @@ public class DataBaseServer {
 
     public ResultSet getOwnerDocuments(String owner) {
         return Queries.getOwnerDocuments(conn, owner);
+    }
+
+
+    public ContentInfo getDocumentContentRequest(String filename, String owner, String username) {
+        return Queries.getDocumentContentRequest(conn, filename, owner, username);
+    }
+
+    public byte[] getContributorPublicKey(String contributor) {
+        return Queries.getContributorPublicKey(conn, contributor);
     }
 
 

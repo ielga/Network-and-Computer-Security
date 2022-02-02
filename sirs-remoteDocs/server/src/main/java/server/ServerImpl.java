@@ -1,5 +1,7 @@
 package server;
 
+import ServerLib.ContentInfo;
+import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
 import sirs.remoteDocs.*;
 import sirs.remoteDocs.RemoteDocsServiceGrpc.RemoteDocsServiceImplBase;
@@ -20,7 +22,7 @@ public class ServerImpl extends RemoteDocsServiceImplBase {
     @Override
     public void registerUser(registerUserRequest request,
                              StreamObserver<registerUserResponse> responseObserver) {
-        String res = db.registerUser(request.getUsername(), request.getPassword());
+        String res = db.registerUser(request.getUsername(), request.getPassword(), request.getPublicKey().toByteArray());
         registerUserResponse response = registerUserResponse.newBuilder()
                 .setRegisterResponse(res).build();
         responseObserver.onNext(response);
@@ -40,7 +42,8 @@ public class ServerImpl extends RemoteDocsServiceImplBase {
     @Override
     public void createDocument(createDocumentRequest request,
                                StreamObserver<createDocumentResponse> responseObserver){
-        String res = db.createDocument(request.getOwner(), request.getFilename(), request.getContent());
+        String res = db.createDocument(request.getOwner(), request.getFilename(), request.getContent(),
+                request.getOwnerReadKey().toByteArray(), request.getOwnerWriteKey().toByteArray());
         createDocumentResponse response = createDocumentResponse.newBuilder()
                .setCreateDocResponse(res).build();
         responseObserver.onNext(response);
@@ -51,7 +54,8 @@ public class ServerImpl extends RemoteDocsServiceImplBase {
     public void addDocumentContributor(addContributorRequest request,
                                        StreamObserver<addContributorResponse> responseObserver){
         String res = db.addDocumentContributor(request.getUsernameOwner(), request.getUsernameContributor(),
-                request.getFilename(), request.getPermission(), request.getLoggedInUserName());
+                request.getFilename(), request.getPermission(), request.getLoggedInUserName(),
+                request.getContributorReadKey().toByteArray(), request.getContributorWriteKey().toByteArray());
         addContributorResponse response = addContributorResponse.newBuilder().
                 setAddUserContributorResponse(res).build();
         responseObserver.onNext(response);
@@ -95,7 +99,7 @@ public class ServerImpl extends RemoteDocsServiceImplBase {
                 responseObserver.onCompleted();
             }
         } catch (Exception e) {
-            System.out.println("ServerImpl: " + RETRIEVING_DOCUMENT_INFO_ERROR);
+            System.out.println("ServerImpl: getContributorDocs: " + RETRIEVING_DOCUMENT_INFO_ERROR);
         }
 
 }
@@ -123,8 +127,64 @@ public class ServerImpl extends RemoteDocsServiceImplBase {
                 responseObserver.onCompleted();
             }
         } catch (Exception e) {
-            System.out.println("ServerImpl: " + RETRIEVING_DOCUMENT_INFO_ERROR);
+            System.out.println("ServerImpl: getOwnerDocs: " + RETRIEVING_DOCUMENT_INFO_ERROR);
         }
     }
+
+
+
+    @Override
+    public void getDocumentContent(getDocumentContentRequest request,
+                                          StreamObserver<getDocumentContentResponse> responseObserver){
+        try {
+
+            ContentInfo contentInfo = db.getDocumentContentRequest(request.getFilename(), request.getOwner(), request.getUsername());
+            getDocumentContentResponse response = getDocumentContentResponse.newBuilder()
+                    .setContent(contentInfo.getContent())
+                    .setReadKey(ByteString.copyFrom(contentInfo.getReadKey()))
+                    .setWriteKey(ByteString.copyFrom(contentInfo.getWriteKey())).build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        } catch(Exception e) {
+            System.out.println("ServerImpl: getDocContent: " + GET_CONTENT_ERROR);
+        }
+    }
+
+    @Override
+    public void getOwnerReadAndWriteKey(getOwnerReadAndWriteKeyRequest request,
+                                        StreamObserver<getOwnerReadAndWriteKeyResponse> responseObserver){
+
+        try {
+            ResultSet rs = db.getOwnerWriteAndReadKey(request.getOwner(), request.getFilename());
+            getOwnerReadAndWriteKeyResponse response = getOwnerReadAndWriteKeyResponse.newBuilder()
+
+                    .setOwnerReadKey(ByteString.copyFrom(rs.getBytes("readKey")))
+                    .setOwnerWriteKey(ByteString.copyFrom(rs.getBytes("writeKey"))).build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        } catch(Exception e) {
+            System.out.println("ServerImpl: getOwnerReadAndWriteKey: " + OWNER_READ_WRITE_ERROR);
+        }
+
+    }
+
+    @Override
+    public void getContributorPublicKey(getContributorPublicKeyRequest request,
+                                        StreamObserver<getContributorPublicKeyResponse> responseObserver) {
+        try {
+            byte[] contributorPublicKeyBytes = db.getContributorPublicKey(request.getContributor());
+            getContributorPublicKeyResponse response = getContributorPublicKeyResponse.newBuilder()
+                    .setContributorPublicKey(ByteString.copyFrom(contributorPublicKeyBytes)).build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        } catch (Exception e) {
+            System.out.println("ServerImpl: getOwnerReadAndWriteKey: " + OWNER_READ_WRITE_ERROR);
+        }
+    }
+
 
 }

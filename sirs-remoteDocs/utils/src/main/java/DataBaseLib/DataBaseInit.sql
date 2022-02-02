@@ -1,84 +1,85 @@
 create database if not exists remoteDocsDB;
 use remoteDocsDB;
 
-# SUBSTITUTE test FOR remoteDocsDB
-
+SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `remoteDocsDB`.`users`;
 DROP TABLE IF EXISTS `remoteDocsDB`.`docs`;
 DROP TABLE IF EXISTS `remoteDocsDB`.`usersDocs`;
+SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE `remoteDocsDB`.`users` (
-    `username` VARCHAR(64) NOT NULL,
-    `password` VARCHAR(64) NOT NULL,
-    `logged` BOOL NOT NULL,
+                                        `username` VARCHAR(64) NOT NULL,
+                                        `password` VARCHAR(64) NOT NULL,
+                                        `publicKey` BLOB,
 
-    PRIMARY KEY (`username`)
+                                        PRIMARY KEY (`username`)
 ) ENGINE=InnoDB;
 
 CREATE TABLE `remoteDocsDB`.`docs` (
-   `owner`  VARCHAR(64) NOT NULL,
-   `filename` VARCHAR(64) NOT NULL ,
-   `content` VARCHAR(1000),
+           `owner`  VARCHAR(64) NOT NULL,
+           `filename` VARCHAR(64) NOT NULL ,
+           `content` VARCHAR(4000),
+           `readKey` BLOB,
+           `writeKey` BLOB,
 
-   FOREIGN KEY (`owner`) REFERENCES users(`username`),
-   PRIMARY KEY (`owner`, `filename`)
+           FOREIGN KEY (`owner`) REFERENCES users(`username`),
+           PRIMARY KEY (`owner`, `filename`)
 
 ) ENGINE=InnoDB;
 
-CREATE TABLE `remotedocsdb`.`usersDocs` (
-    `contributor` VARCHAR(64) NOT NULL,
-    `owner` VARCHAR(64) NOT NULL,
-    `filename` VARCHAR(64) NOT NULL,
-    `permission` VARCHAR(64) NOT NULL,
+CREATE TABLE `remoteDocsDB`.`usersDocs` (
+                `contributor` VARCHAR(64) NOT NULL,
+                `owner` VARCHAR(64) NOT NULL,
+                `filename` VARCHAR(64) NOT NULL,
+                `permission` VARCHAR(64) NOT NULL,
+                `readKey` BLOB,
+                `writeKey` BLOB,
 
-    FOREIGN KEY (`contributor`) REFERENCES users(`username`),
-    FOREIGN KEY (`owner`, `filename`) REFERENCES docs (`owner`, `filename`),
-    PRIMARY KEY (`contributor`, `owner`, `filename`)
+                FOREIGN KEY (`contributor`) REFERENCES users(`username`),
+                FOREIGN KEY (`owner`, `filename`) REFERENCES docs (`owner`, `filename`),
+                PRIMARY KEY (`contributor`, `owner`, `filename`)
 ) ENGINE=InnoDB;
 
 INSERT INTO `remoteDocsDB`.`users`
-    (`username`,
-     `password`,
-     `logged`)
-    VALUES
-        ('diana',
-         'password', false);
+(`username`,
+ `password`)
+VALUES
+    ('diana',
+     'password');
 
 INSERT INTO `remoteDocsDB`.`users`
-    (`username`,
-     `password`,
-     `logged`)
-    VALUES
-        ('fatima',
-         'password2', false);
+(`username`,
+ `password`)
+VALUES
+    ('fatima',
+     'password2');
 
 INSERT INTO `remoteDocsDB`.`users`
-    (`username`,
-     `password`,
-     `logged`)
-    VALUES
-        ('ielga',
-         'password3', false);
+(`username`,
+ `password`)
+VALUES
+    ('ielga',
+     'password3');
 
 
 INSERT INTO `remoteDocsDB`.`docs`
-    (`owner`,`filename`,`content`)
-    VALUES
+(`owner`,`filename`,`content`)
+VALUES
     ('diana','f1.txt','this is the docs content one');
 
 INSERT INTO `remoteDocsDB`.`docs`
-    (`owner`,`filename`,`content`)
-    VALUES
+(`owner`,`filename`,`content`)
+VALUES
     ('ielga','f2.txt', 'this is the docs content two');
 
-INSERT INTO `remoteDocsDB`.`usersdocs`
-    (`contributor`,`owner`,`filename`,`permission`)
-    VALUES
+INSERT INTO `remoteDocsDB`.`usersDocs`
+(`contributor`,`owner`,`filename`,`permission`)
+VALUES
     ('fatima','diana','f1.txt','w');
 
-INSERT INTO `remoteDocsDB`.`usersdocs`
-    (`contributor`,`owner`,`filename`,`permission`)
-    VALUES
-    ('diana','ielga','f2.txt','r/w');
+INSERT INTO `remoteDocsDB`.`usersDocs`
+(`contributor`,`owner`,`filename`,`permission`)
+VALUES
+    ('diana','ielga','f2.txt','w');
 
 SELECT * FROM remoteDocsDB.docs;

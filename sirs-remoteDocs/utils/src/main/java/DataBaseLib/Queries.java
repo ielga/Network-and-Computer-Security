@@ -1,5 +1,9 @@
 package DataBaseLib;
 
+import ServerLib.ContentInfo;
+import jdk.jfr.ContentType;
+
+import javax.xml.transform.Result;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -9,9 +13,9 @@ import static DataBaseLib.Messages.*;
 
 public class Queries {
 
-    public static String registerUser(Connection conn, String username, String password) {
+    public static String registerUser(Connection conn, String username, String password, byte[] publicKey) {
         try {
-            System.out.println("RegisterUserInputs: " + username + password);
+            System.out.println("Register User");
             MessageDigest algorithm = MessageDigest.getInstance("SHA-256");
             byte[] messageDigest = algorithm.digest(password.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
@@ -19,10 +23,10 @@ public class Queries {
                 sb.append(String.format("%02x", b));
             }
             PreparedStatement stmt =
-                    conn.prepareStatement("INSERT INTO `remoteDocsDB`.`users` (username, password, logged) VALUES(?, ?, ?)");
+                    conn.prepareStatement("INSERT INTO users (username, password, publicKey) VALUES(?, ?, ?)");
             stmt.setString(1, username);
             stmt.setString(2, sb.toString());
-            stmt.setBoolean(3, false);
+            stmt.setBytes(3, publicKey);
             stmt.execute();
 
             return USER_REGISTERED;
@@ -33,20 +37,16 @@ public class Queries {
 
     public static String loginUser(Connection conn, String username, String password) {
         try {
-            PreparedStatement stmt = conn.prepareStatement("SELECT password FROM `remoteDocsDB`.`users` where username = ?");
+            System.out.println("Log In User!");
+            PreparedStatement stmt = conn.prepareStatement("SELECT password FROM users where username = ?");
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
 
-            PreparedStatement stmt2 =
-                    conn.prepareStatement("UPDATE `remoteDocsDB`.`users` SET logged = ? where  username = ? and password = ?");
-            stmt2.setBoolean(1, true);
-            stmt2.setString(2, username);
-            stmt2.setString(3, password);
-
             if(rs.next()){
+
                 String dbUserPass = rs.getString("password");
+                System.out.println(dbUserPass);
                 if(password.equals(dbUserPass)){
-                    stmt2.executeUpdate();
                     return USER_LOGGED;
                 }
                 return WRONG_PASSWORD;
@@ -57,18 +57,19 @@ public class Queries {
         }
     }
 
-    public  static String createDocument(Connection conn, String owner, String filename, String content){
+    public  static String createDocument(Connection conn, String owner, String filename, String content, byte[] ownerReadKey, byte[] ownerWriteKey){
 
         try{
-            System.out.println("CreateDocument: " + owner + filename + content);
+
             PreparedStatement stmt_doc =
-                    conn.prepareStatement("INSERT INTO `remoteDocsDB`.`docs`(owner, filename, content) VALUES (?, ?, ?)");
+                    conn.prepareStatement("INSERT INTO docs (owner, filename, content, readKey, writeKey) VALUES (?, ?, ?, ?, ?)");
             stmt_doc.setString(1, owner);
             stmt_doc.setString(2, filename);
             stmt_doc.setString(3, content);
-            System.out.println("CreateDoc Query Executed!");
+            stmt_doc.setBytes(4, ownerReadKey);
+            stmt_doc.setBytes(5, ownerWriteKey);
             stmt_doc.execute();
-            System.out.println("Lets see it!");
+
 
             return FILE_CREATED;
         }catch (SQLException e){
@@ -78,27 +79,30 @@ public class Queries {
     }
 
     public static String addDocumentContributor(Connection conn, String userOwner, String userContributorName,
-                                                String filename, String permission, String loggedInUser){
+                                                String filename, String permission, String loggedInUser,
+                                                byte[] contributorReadKey, byte[] contributorWriteKey){
         try{
 
             if(userOwner.equals(loggedInUser)){
-                PreparedStatement stmt = conn.prepareStatement("SELECT owner FROM `remoteDocsDB`.`docs` where owner = ? and filename = ? ");
+                PreparedStatement stmt = conn.prepareStatement("SELECT owner FROM docs where owner = ? and filename = ? ");
                 stmt.setString(1, userOwner);
                 stmt.setString(2, filename);
                 ResultSet rs;
 
                 if(stmt.executeQuery().next() ){
-                    stmt = conn.prepareStatement("SELECT username FROM `remoteDocsDB`.`users` where username = ?");
+                    stmt = conn.prepareStatement("SELECT username FROM users where username = ?");
                     stmt.setString(1, userContributorName);
 
                     if(stmt.executeQuery().next()){
 
-                        stmt = conn.prepareStatement("INSERT INTO `remoteDocsDB`.`usersDocs`(contributor,owner,filename, permission) " +
-                                "VALUES(?, ?, ?, ?)");
+                        stmt = conn.prepareStatement("INSERT INTO usersDocs (contributor,owner,filename, permission, readKey, writeKey) " +
+                                "VALUES(?, ?, ?, ?, ?, ?)");
                         stmt.setString(1, userContributorName);
                         stmt.setString(2, userOwner);
                         stmt.setString(3, filename);
                         stmt.setString(4, permission);
+                        stmt.setBytes(5, contributorReadKey);
+                        stmt.setBytes(6, contributorWriteKey);
                         stmt.execute();
                         return CONTRIBUTOR_WAS_ADDED;
                     }
@@ -112,6 +116,20 @@ public class Queries {
             return ADD_CONTRIBUTOR_ERROR;
         }
 
+    }
+
+    public static ResultSet getOwnerWriteAndReadKey(Connection conn, String owner, String filename) {
+        try {
+
+            PreparedStatement stmt = conn.prepareStatement("SELECT readKey, writeKey FROM docs where owner = ? and filename = ? ");
+            stmt.setString(1, owner);
+            stmt.setString(2, filename);
+            return stmt.executeQuery();
+        } catch (Exception e) {
+            System.out.println(OWNER_READ_WRITE_ERROR);
+
+        }
+        return null;
     }
 
     public static String editDocumentContent(Connection conn, String filename, String contributor, String owner, String newContent){
@@ -140,7 +158,7 @@ public class Queries {
 
                 if(rs.next()){
                     String permission = rs.getString("permission");
-                    if(permission.equals("w") || permission.equals("r/w")){
+                    if(permission.equals("w")){
                         stmt =  conn.prepareStatement("UPDATE `remoteDocsDB`.`docs` SET content = ? where  filename = ? and owner = ? ");
                         stmt.setString(1, newContent);
                         stmt.setString(2, filename);
@@ -171,6 +189,7 @@ public class Queries {
 
     public static ResultSet getOwnerDocuments(Connection conn, String owner) {
         try {
+
             PreparedStatement stmt = conn.prepareStatement("SELECT filename FROM `remoteDocsDB`.`docs` where owner = ? ");
             stmt.setString(1, owner);
 
@@ -181,4 +200,82 @@ public class Queries {
         }
     }
 
+
+    public static ContentInfo getDocumentContentRequest(Connection conn, String filename, String owner, String username) {
+        try {
+            if(owner.equals(username)) {
+                // the user who is requesting access to content is the owner of the doc
+                PreparedStatement stmt_1 = conn.prepareStatement("SELECT content, readKey, writeKey FROM `remoteDocsDB`.`docs` where owner = ? and filename = ? ");
+                stmt_1.setString(1, owner);
+                stmt_1.setString(2, filename);
+                ResultSet rs_1 = stmt_1.executeQuery();
+
+                if (rs_1.next()) {
+                    ContentInfo contentInfo_1 = new ContentInfo();
+                    contentInfo_1.setContent(rs_1.getString("content"));
+                    contentInfo_1.setReadKey(rs_1.getBytes("readKey"));
+                    contentInfo_1.setWriteKey(rs_1.getBytes("writeKey"));
+                    return contentInfo_1;
+                }
+                else {
+                    ContentInfo errorContent = new ContentInfo();
+                    errorContent.setContent(Messages.FILE_OR_OWNER_DOES_NOT_EXIST);
+                    return errorContent;
+                }
+            }
+            else {
+                // the writer who is requesting access to content is a contributor
+                PreparedStatement stmt = conn.prepareStatement("SELECT readKey, writeKey FROM `remoteDocsDB`.`usersDocs` where contributor = ? and owner = ? and filename = ? ");
+                stmt.setString(1, username);
+                stmt.setString(2, owner);
+                stmt.setString(3, filename);
+
+                ResultSet rs = stmt.executeQuery();
+
+                if(rs.next()) {
+                    PreparedStatement stmt_2 = conn.prepareStatement("SELECT content FROM docs where filename = ? and owner = ? ");
+                    stmt_2.setString(1, filename);
+                    stmt_2.setString(2, owner);
+
+                    ResultSet rs_2 = stmt_2.executeQuery();
+                    if (rs_2.next()) {
+                        ContentInfo contentInfo = new ContentInfo();
+                        contentInfo.setContent(rs_2.getString("content"));
+                        contentInfo.setReadKey(rs.getBytes("readKey"));
+                        contentInfo.setWriteKey(rs.getBytes("writeKey"));
+                        return contentInfo;
+                    }
+                    else {
+                        ContentInfo errorContent = new ContentInfo();
+                        errorContent.setContent(Messages.FILE_OR_OWNER_DOES_NOT_EXIST);
+                        return errorContent;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            ContentInfo errorContent = new ContentInfo();
+            errorContent.setContent(Messages.GET_CONTENT_ERROR);
+            return errorContent;
+        }
+        return null;
+    }
+
+    public static byte[] getContributorPublicKey(Connection conn, String contributor) {
+        try {
+            PreparedStatement stmt = conn.prepareStatement("SELECT publicKey FROM `remoteDocsDB`.`users` where username = ? ");
+            stmt.setString(1, contributor);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getBytes("publicKey");
+            }
+            else {
+                System.out.println("GetContributorPublicKey" +  CONTRIBUTOR_DOES_NOT_EXIST);
+            }
+
+        } catch (Exception e) {
+            System.out.println("GetContributorPublicKey: " + CONTRIBUTOR_PUBLIC_KEY_ERROR);
+        }
+        return null;
+    }
 }

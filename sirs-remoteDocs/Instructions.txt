@@ -8,3 +8,7 @@ For manual execution through the terminals:
 
     From main directory: One terminal for Client
         $java -cp .\bin client.Client
+
+
+After setting up the MySql database, run:
+sudo mysql --user=root --password=sirsRDpasswd47dif remoteDocsDB < wetransfer_project-sirs-final/project-sirs-final/Network-and-Computer-Security/sirs-remoteDocs/utils/src/main/java/DataBaseLib/DataBaseInit.sql

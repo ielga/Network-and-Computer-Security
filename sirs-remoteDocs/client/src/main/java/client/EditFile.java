@@ -4,9 +4,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import static DataBaseLib.Messages.*;
 
-public class EditFile extends JFrame{
+public class EditFile extends JFrame {
     private JButton saveChangesButton;
     private JTextField textFileName;
     private JTextArea textContentEdit;
@@ -14,35 +15,45 @@ public class EditFile extends JFrame{
     private JButton exitButton;
     private JTextField textOwner;
     private String file_name;
+    private String content;
     private String owner;
     private String contributor;
 
-    public EditFile(ClientService clientService){
+    public EditFile(ClientService clientService, File selectedFile) {
         setContentPane(EditPanel);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(450,300));
+        setMinimumSize(new Dimension(450, 300));
         setVisible(true);
         pack();
+
+        System.out.println("Selected file info: " + selectedFile.getFileName() + " " + selectedFile.getOwner() + " " + selectedFile.getPermission());
+
+        file_name = selectedFile.getFileName();
+        textFileName.setText(file_name);
+        content = clientService.getDocumentContent(file_name, selectedFile.getOwner(), clientService.getLoggedInUser().username);
+        System.out.println("content: " + content);
+        textContentEdit.setText(content);
+
+        owner = selectedFile.getOwner();
+        textOwner.setText(owner);
+        contributor = clientService.getLoggedInUsername();
+
         saveChangesButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                file_name = textFileName.getText();
+
+
                 String newContent = textContentEdit.getText();
-                owner = textOwner.getText();
-                contributor = clientService.getLoggedInUser();
 
                 String result = clientService.editDocumentContent(file_name, contributor, owner, newContent);
                 clientService.Log("EditFile: ", result);
                 if (result.equals(EDIT_CONTENT_ERROR)) {
                     JOptionPane.showMessageDialog(null, "Edit content error,Try again");
-                }
-                else if(result.equals(CONTENT_UPDATED)){
+                } else if (result.equals(CONTENT_UPDATED)) {
                     JOptionPane.showMessageDialog(null, CONTENT_UPDATED);
-                }
-                else if(result.equals(USER_DOES_NOT_HAVE_PERMISSION)){
+                } else if (result.equals(USER_DOES_NOT_HAVE_PERMISSION)) {
                     JOptionPane.showMessageDialog(null, USER_DOES_NOT_HAVE_PERMISSION);
-                }
-                else {
+                } else {
                     JOptionPane.showMessageDialog(null, "An internal error has occured!");
                 }
                 dispose();
@@ -57,4 +68,5 @@ public class EditFile extends JFrame{
             }
         });
     }
+
 }

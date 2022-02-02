@@ -5,10 +5,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import static DataBaseLib.Messages.ADD_CONTRIBUTOR_DENIED;
-import static DataBaseLib.Messages.CONTRIBUTOR_WAS_ADDED;
+import static DataBaseLib.Messages.*;
 
-public class ShareFile extends JFrame{
+public class ShareFile extends JFrame {
     private JTextField textOwner;
     private JTextField textContributor;
     private JTextField textFileName;
@@ -20,10 +19,10 @@ public class ShareFile extends JFrame{
     private String contributor;
     private String user_permission;
 
-    public ShareFile(ClientService clientService){
+    public ShareFile(ClientService clientService) {
         setContentPane(SharePanel);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(450,300));
+        setMinimumSize(new Dimension(450, 300));
         setVisible(true);
         pack();
 
@@ -33,18 +32,13 @@ public class ShareFile extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                file_name= textFileName.getText();
+                file_name = textFileName.getText();
                 owner = textOwner.getText();
                 contributor = textContributor.getText();
                 user_permission = textPermission.getText();
                 String name = textFileName.getText();
 
-                System.out.println(name);
-
-                System.out.println("fileName: "+ file_name + "owner: "+owner);
-                System.out.println("Contributor "+ contributor + "Permission: "+ user_permission );
-
-                if(contributor!=null || user_permission!=null) {
+                if (contributor != null || user_permission != null) {
                     String result = clientService.addDocumentContributor(owner, contributor, file_name, user_permission);
                     clientService.Log("Edit  File: ", result);
 
@@ -52,8 +46,11 @@ public class ShareFile extends JFrame{
                         JOptionPane.showMessageDialog(null, "Save Changes");
                     } else if (result.equals(ADD_CONTRIBUTOR_DENIED)) {
                         JOptionPane.showMessageDialog(null, "Add Contributor Denied");
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Contributor doesn't exits");
+                    } else if (result.equals(INVALID_PERMISSION)) {
+                        JOptionPane.showMessageDialog(null, INVALID_PERMISSION);
+                    }
+                    else {
+                        JOptionPane.showMessageDialog(null, "Contributor doesn't exist");
                     }
                     dispose();
                     FileForm fileForm = new FileForm(clientService);
@@ -61,4 +58,5 @@ public class ShareFile extends JFrame{
             }
         });
     }
+
 }

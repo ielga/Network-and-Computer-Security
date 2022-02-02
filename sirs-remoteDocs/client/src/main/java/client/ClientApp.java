@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ClientApp extends JFrame{
+public class ClientApp extends JFrame {
     private JButton loginButton;
     private JPanel panel1;
     private JButton registerButton;
@@ -13,9 +13,10 @@ public class ClientApp extends JFrame{
 
     public ClientApp() {
         dispose();
+
         setContentPane(panel1);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(450,300));
+        setMinimumSize(new Dimension(450, 300));
         setVisible(true);
         pack();
 
@@ -35,9 +36,11 @@ public class ClientApp extends JFrame{
             }
         });
     }
-    public static void main(String args[]){
+
+    public static void main(String args[]) {
         clientService = new ClientService();
         ClientApp clientApp = new ClientApp();
 
     }
+
 }
