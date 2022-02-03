@@ -168,7 +168,7 @@ public class ClientService {
                 String newContent = Base64.getEncoder().encodeToString(cipherContent);
 
                 /* Getting public key of owner */
-                String ownerPubKeyPath = "src/main/resources/PublicKey_" + owner;
+                String ownerPubKeyPath = "/src/main/resources/PublicKey_" + owner;
                 CryptoGenerator cg = new CryptoGenerator();
                 PublicKey pubKey = cg.loadPublicKey(ownerPubKeyPath);
 
