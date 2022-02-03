@@ -42,15 +42,25 @@ public class ShareFile extends JFrame {
                     String result = clientService.addDocumentContributor(owner, contributor, file_name, user_permission);
                     clientService.Log("Edit  File: ", result);
 
-                    if (result.equals(CONTRIBUTOR_WAS_ADDED)) {
-                        JOptionPane.showMessageDialog(null, "Save Changes");
-                    } else if (result.equals(ADD_CONTRIBUTOR_DENIED)) {
-                        JOptionPane.showMessageDialog(null, "Add Contributor Denied");
-                    } else if (result.equals(INVALID_PERMISSION)) {
-                        JOptionPane.showMessageDialog(null, INVALID_PERMISSION);
-                    }
-                    else {
-                        JOptionPane.showMessageDialog(null, "Contributor doesn't exist");
+                    switch (result) {
+                        case CONTRIBUTOR_WAS_ADDED:
+                            JOptionPane.showMessageDialog(null, "Save Changes");
+                            break;
+                        case ADD_CONTRIBUTOR_DENIED:
+                            JOptionPane.showMessageDialog(null, "Add Contributor Denied");
+                            break;
+                        case INVALID_PERMISSION:
+                            JOptionPane.showMessageDialog(null, INVALID_PERMISSION);
+                            break;
+                        case CONTRIBUTOR_DOES_NOT_EXIST:
+                            JOptionPane.showMessageDialog(null, "Contributor doesn't Exist");
+                            break;
+                        case FILE_OR_OWNER_DOES_NOT_EXIST:
+                            JOptionPane.showMessageDialog(null, "File or owner doesn't Exist");
+                            break;
+                        case ADD_CONTRIBUTOR_ERROR:
+                            JOptionPane.showMessageDialog(null, ADD_CONTRIBUTOR_ERROR);
+                            break;
                     }
                     dispose();
                     FileForm fileForm = new FileForm(clientService);

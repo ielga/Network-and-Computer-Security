@@ -122,10 +122,10 @@ public class CryptoGenerator {
 
     public PrivateKey convertBytesToPrivateKey(byte[] privateKeyByte) {
         try {
-            X509EncodedKeySpec publicSpec = new X509EncodedKeySpec(privateKeyByte);
-            KeyFactory kfPublic = KeyFactory.getInstance("RSA");
-
-            return kfPublic.generatePrivate(publicSpec);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            PrivateKey privateKey = kf.generatePrivate(new PKCS8EncodedKeySpec(privateKeyByte));
+            System.out.println("PrivateKeyBytes: " + privateKey);
+            return privateKey;
         } catch (Exception e) {
             System.out.println("Crypto Generator: convert bytes to Private Key" + e.getMessage());
         }

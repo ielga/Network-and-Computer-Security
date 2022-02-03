@@ -6,7 +6,11 @@ import io.grpc.stub.StreamObserver;
 import sirs.remoteDocs.*;
 import sirs.remoteDocs.RemoteDocsServiceGrpc.RemoteDocsServiceImplBase;
 
+import java.nio.ByteBuffer;
+import java.sql.*;
 import java.sql.ResultSet;
+import java.util.Arrays;
+
 import static DataBaseLib.Messages.*;
 
 
@@ -157,10 +161,14 @@ public class ServerImpl extends RemoteDocsServiceImplBase {
 
         try {
             ResultSet rs = db.getOwnerWriteAndReadKey(request.getOwner(), request.getFilename());
+            Blob readKey = rs.getBlob("readKey");
+            Blob writeKey = rs.getBlob("writeKey");
+
             getOwnerReadAndWriteKeyResponse response = getOwnerReadAndWriteKeyResponse.newBuilder()
 
-                    .setOwnerReadKey(ByteString.copyFrom(rs.getBytes("readKey")))
-                    .setOwnerWriteKey(ByteString.copyFrom(rs.getBytes("writeKey"))).build();
+                    .setOwnerReadKey(ByteString.copyFrom(readKey.getBytes(1, (int) readKey.length())))
+                    .setOwnerWriteKey(ByteString.copyFrom(writeKey.getBytes(1, (int)writeKey.length()))).build();
+
             responseObserver.onNext(response);
             responseObserver.onCompleted();
 

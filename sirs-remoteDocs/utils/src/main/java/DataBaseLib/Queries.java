@@ -1,13 +1,12 @@
 package DataBaseLib;
 
 import ServerLib.ContentInfo;
-import jdk.jfr.ContentType;
 
-import javax.xml.transform.Result;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.util.Arrays;
 
 import static DataBaseLib.Messages.*;
 
@@ -15,6 +14,7 @@ public class Queries {
 
     public static String registerUser(Connection conn, String username, String password, byte[] publicKey) {
         try {
+            System.out.println("PublicKey: "+ Arrays.toString(publicKey));
             System.out.println("Register User");
             MessageDigest algorithm = MessageDigest.getInstance("SHA-256");
             byte[] messageDigest = algorithm.digest(password.getBytes(StandardCharsets.UTF_8));
@@ -28,7 +28,7 @@ public class Queries {
             stmt.setString(2, sb.toString());
             stmt.setBytes(3, publicKey);
             stmt.execute();
-
+            System.out.println("Register User is working!");
             return USER_REGISTERED;
         } catch (SQLException | NoSuchAlgorithmException e) {
             return REGISTER_ERROR;
@@ -73,7 +73,6 @@ public class Queries {
 
             return FILE_CREATED;
         }catch (SQLException e){
-                System.out.println("");
             return CREATE_DOCUMENT_ERROR;
         }
     }
@@ -87,7 +86,6 @@ public class Queries {
                 PreparedStatement stmt = conn.prepareStatement("SELECT owner FROM docs where owner = ? and filename = ? ");
                 stmt.setString(1, userOwner);
                 stmt.setString(2, filename);
-                ResultSet rs;
 
                 if(stmt.executeQuery().next() ){
                     stmt = conn.prepareStatement("SELECT username FROM users where username = ?");
@@ -121,10 +119,14 @@ public class Queries {
     public static ResultSet getOwnerWriteAndReadKey(Connection conn, String owner, String filename) {
         try {
 
+
             PreparedStatement stmt = conn.prepareStatement("SELECT readKey, writeKey FROM docs where owner = ? and filename = ? ");
             stmt.setString(1, owner);
             stmt.setString(2, filename);
-            return stmt.executeQuery();
+
+            if(stmt.executeQuery().next()){
+                return stmt.getResultSet();
+            }
         } catch (Exception e) {
             System.out.println(OWNER_READ_WRITE_ERROR);
 
@@ -205,7 +207,9 @@ public class Queries {
         try {
             if(owner.equals(username)) {
                 // the user who is requesting access to content is the owner of the doc
-                PreparedStatement stmt_1 = conn.prepareStatement("SELECT content, readKey, writeKey FROM `remoteDocsDB`.`docs` where owner = ? and filename = ? ");
+                PreparedStatement stmt_1 = conn.prepareStatement(
+                        "SELECT content, readKey, writeKey FROM `remoteDocsDB`.`docs` " +
+                                "where owner = ? and filename = ? ");
                 stmt_1.setString(1, owner);
                 stmt_1.setString(2, filename);
                 ResultSet rs_1 = stmt_1.executeQuery();
@@ -233,7 +237,8 @@ public class Queries {
                 ResultSet rs = stmt.executeQuery();
 
                 if(rs.next()) {
-                    PreparedStatement stmt_2 = conn.prepareStatement("SELECT content FROM docs where filename = ? and owner = ? ");
+                    PreparedStatement stmt_2 = conn.prepareStatement("SELECT content " +
+                            "FROM docs where filename = ? and owner = ? ");
                     stmt_2.setString(1, filename);
                     stmt_2.setString(2, owner);
 

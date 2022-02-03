@@ -222,7 +222,7 @@ public class ClientService {
                 if (permission.equals("read")) {
                     currentPermission = "r";
                 }
-                if (permission.equals("write")) {
+                else if (permission.equals("write")) {
                     currentPermission = "w";
                 }
                 else {
@@ -236,27 +236,29 @@ public class ClientService {
                 byte[] ownerReadKey = response1.getOwnerReadKey().toByteArray();
                 byte[] ownerWriteKey = response1.getOwnerWriteKey().toByteArray();
 
+
                 String ownerPubKeyPath = "client/src/main/resources/PublicKey_" + owner;
                 String ownerPrvKeyPath = "client/src/main/resources/PrivateKey_" + owner;
+
                 CryptoGenerator cg = new CryptoGenerator();
                 PublicKey pubKey = cg.loadPublicKey(ownerPubKeyPath);
                 PrivateKey prvKey = cg.loadPrivateKey(ownerPrvKeyPath);
 
+
                 byte[] ownerPublicKeyByte = pubKey.getEncoded();
                 byte[] ownerPrivateKeyByte = prvKey.getEncoded();
                 byte[] contributorPublicKeyByte = getContributorPublicKey(contributor);
-
 
                 PublicKey ownerPubKey = cg.convertBytesToPublicKey(ownerPublicKeyByte);
                 PublicKey contributorPubKey = cg.convertBytesToPublicKey(contributorPublicKeyByte);
                 PrivateKey ownerPrvKey = cg.convertBytesToPrivateKey(ownerPrivateKeyByte);
 
 
-                byte[] contributorReadKey = new byte[500];
-                byte[] contributorWriteKey = new byte[500];
+                byte[] contributorReadKey = new byte[512];
+                byte[] contributorWriteKey = new byte[512];
                 Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 
-                if(permission.equals("w")){
+                if(permission.equals("write")){
                     cipher.init(Cipher.DECRYPT_MODE, ownerPrvKey);
                     byte[] docPubKeyByte = cipher.doFinal(ownerWriteKey);
                     byte[] docPrvKeyByte = cipher.doFinal(ownerReadKey);
@@ -264,15 +266,13 @@ public class ClientService {
                     contributorReadKey = cipher.doFinal(docPrvKeyByte);
                     contributorWriteKey = cipher.doFinal(docPubKeyByte);
                 }
-                else if(permission.equals("r")){
-                     contributorWriteKey = new byte[500];
+                else if(permission.equals("read")){
                      cipher.init(Cipher.DECRYPT_MODE, ownerPrvKey);
                      byte[] docPrvKeyByte = cipher.doFinal(ownerReadKey);
                      cipher.init(Cipher.ENCRYPT_MODE, contributorPubKey);
-
                      contributorReadKey = cipher.doFinal(docPrvKeyByte);
+                     contributorWriteKey = new byte[512];
                 }
-
 
                 addContributorRequest request = addContributorRequest.newBuilder()
                                                 .setUsernameOwner(owner).setUsernameContributor(contributor)
