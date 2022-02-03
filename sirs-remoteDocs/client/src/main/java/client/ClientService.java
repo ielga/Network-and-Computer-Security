@@ -95,8 +95,8 @@ public class ClientService {
                      if(responseMessage.equals(USER_REGISTERED)) {
                          Log("ClientService: Register - ", responseMessage);
                          // If the register was successful, then we save it in the file
-                         String publicKeyPath = "client/src/main/resources/PublicKey_" + username;
-                         String privateKeyPath = "client/src/main/resources/PrivateKey_" + username;
+                         String publicKeyPath = "src/main/resources/PublicKey_" + username;
+                         String privateKeyPath = "src/main/resources/PrivateKey_" + username;
                          cg.createKeyFile(publicKeyPath, pubKey.getEncoded());
                          cg.createKeyFile(privateKeyPath, privKey.getEncoded());
                      }
@@ -168,7 +168,7 @@ public class ClientService {
                 String newContent = Base64.getEncoder().encodeToString(cipherContent);
 
                 /* Getting public key of owner */
-                String ownerPubKeyPath = "client/src/main/resources/PublicKey_" + owner;
+                String ownerPubKeyPath = "src/main/resources/PublicKey_" + owner;
                 CryptoGenerator cg = new CryptoGenerator();
                 PublicKey pubKey = cg.loadPublicKey(ownerPubKeyPath);
 
@@ -228,8 +228,8 @@ public class ClientService {
                 byte[] ownerWriteKey = response1.getOwnerWriteKey().toByteArray();
 
 
-                String ownerPubKeyPath = "client/src/main/resources/PublicKey_" + owner;
-                String ownerPrvKeyPath = "client/src/main/resources/PrivateKey_" + owner;
+                String ownerPubKeyPath = "src/main/resources/PublicKey_" + owner;
+                String ownerPrvKeyPath = "src/main/resources/PrivateKey_" + owner;
 
                 CryptoGenerator cg = new CryptoGenerator();
                 PublicKey pubKey = cg.loadPublicKey(ownerPubKeyPath);
@@ -311,14 +311,14 @@ public class ClientService {
 
             if(owner.equals(username)) {
                 // we are the owners - load our public keys
-                String ownerPubKeyPath = "client/src/main/resources/PublicKey_" + owner;
+                String ownerPubKeyPath = "src/main/resources/PublicKey_" + owner;
                 String ownerPrivateKeyPath = "client/src/main/resources/PrivateKey_" + owner;
                 pubKey = cg.loadPublicKey(ownerPubKeyPath);
                 privKey = cg.loadPrivateKey(ownerPrivateKeyPath);
             }
             else {
-                String contributorPubKeyPath = "client/src/main/resources/PublicKey_" + username;
-                String contributorPrivateKeyPath = "client/src/main/resources/PrivateKey_" + username;
+                String contributorPubKeyPath = "src/main/resources/PublicKey_" + username;
+                String contributorPrivateKeyPath = "src/main/resources/PrivateKey_" + username;
                 pubKey = cg.loadPublicKey(contributorPubKeyPath);
                 privKey = cg.loadPrivateKey(contributorPrivateKeyPath);
 
@@ -371,7 +371,7 @@ public class ClientService {
 
                     writeKey = response1.getOwnerWriteKey().toByteArray(); //(PubDocument)PublicOwner
 
-                    String ownerPrivateKeyPath = "client/src/main/resources/PrivateKey_" + owner;
+                    String ownerPrivateKeyPath = "src/main/resources/PrivateKey_" + owner;
 
                     privKey = cg.loadPrivateKey(ownerPrivateKeyPath);
 
@@ -384,7 +384,7 @@ public class ClientService {
                     writeKey = response1.getContributorWriteKey().toByteArray(); //(PubDocument)PublicOwner
 
 
-                    String contributorPrivateKeyPath = "client/src/main/resources/PrivateKey_" + contributor;
+                    String contributorPrivateKeyPath = "src/main/resources/PrivateKey_" + contributor;
 
                     privKey = cg.loadPrivateKey(contributorPrivateKeyPath);
 
