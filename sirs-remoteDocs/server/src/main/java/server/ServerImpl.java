@@ -165,7 +165,6 @@ public class ServerImpl extends RemoteDocsServiceImplBase {
             Blob writeKey = rs.getBlob("writeKey");
 
             getOwnerReadAndWriteKeyResponse response = getOwnerReadAndWriteKeyResponse.newBuilder()
-
                     .setOwnerReadKey(ByteString.copyFrom(readKey.getBytes(1, (int) readKey.length())))
                     .setOwnerWriteKey(ByteString.copyFrom(writeKey.getBytes(1, (int)writeKey.length()))).build();
 
@@ -177,6 +176,34 @@ public class ServerImpl extends RemoteDocsServiceImplBase {
         }
 
     }
+
+
+    @Override
+    public void getContributorReadAndWriteKey(getContributorReadAndWriteKeyRequest request,
+                                        StreamObserver<getContributorReadAndWriteKeyResponse> responseObserver){
+
+        try {
+            ResultSet rs = db.getContributorWriteAndReadKey(request.getContributor(), request.getFilename(), request.getOwner());
+            Blob readKey = rs.getBlob("readKey");
+            Blob writeKey = rs.getBlob("writeKey");
+
+            System.out.println("contributor response: in database: XXXXXXXXXXXX ");
+            System.out.println("write key: " + writeKey);
+
+            getContributorReadAndWriteKeyResponse response = getContributorReadAndWriteKeyResponse.newBuilder()
+                    .setContributorReadKey(ByteString.copyFrom(readKey.getBytes(1, (int) readKey.length())))
+                    .setContributorWriteKey(ByteString.copyFrom(writeKey.getBytes(1, (int)writeKey.length()))).build();
+
+            System.out.println("contributor response: in database: " + response.getContributorWriteKey());
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        } catch(Exception e) {
+            System.out.println("ServerImpl: getContributorReadAndWriteKey: " + OWNER_READ_WRITE_ERROR);
+        }
+
+    }
+
 
     @Override
     public void getContributorPublicKey(getContributorPublicKeyRequest request,
@@ -193,6 +220,7 @@ public class ServerImpl extends RemoteDocsServiceImplBase {
             System.out.println("ServerImpl: getOwnerReadAndWriteKey: " + OWNER_READ_WRITE_ERROR);
         }
     }
+
 
 
 }

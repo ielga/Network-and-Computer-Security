@@ -14,6 +14,7 @@ service RemoteDocsService {
   rpc getOwnerDocuments(getOwnerDocumentsRequest) returns (stream getOwnerDocumentsResponse) {};
   rpc getDocumentContent(getDocumentContentRequest) returns (getDocumentContentResponse) {};
   rpc getOwnerReadAndWriteKey(getOwnerReadAndWriteKeyRequest) returns (getOwnerReadAndWriteKeyResponse) {};
+  rpc getContributorReadAndWriteKey(getContributorReadAndWriteKeyRequest) returns (getContributorReadAndWriteKeyResponse) {};
   rpc getContributorPublicKey(getContributorPublicKeyRequest) returns (getContributorPublicKeyResponse) {};
 }
 
@@ -99,6 +100,19 @@ message getOwnerReadAndWriteKeyResponse{
   bytes ownerReadKey = 1;
   bytes ownerWriteKey = 2;
 }
+
+message getContributorReadAndWriteKeyRequest{
+  string contributor = 1;
+  string filename = 2;
+  string owner = 3;
+}
+
+message getContributorReadAndWriteKeyResponse{
+  bytes contributorReadKey = 1;
+  bytes contributorWriteKey = 2;
+}
+
+
 message editDocContentResponse {
   string editDocumentResponse = 1;
 }
