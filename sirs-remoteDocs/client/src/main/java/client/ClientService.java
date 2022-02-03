@@ -42,9 +42,9 @@ public class ClientService {
 
 
     public ClientService() {
-        File CAsCertFile = new File("utils/src/main/resources/CACert.pem");
-        File clientCertFile = new File("utils/src/main/resources/UserCert.pem");
-        File clientKeyFile = new File("utils/src/main/resources/UserKey.pem");
+        File CAsCertFile = new File("../utils/src/main/resources/CACert.pem");
+        File clientCertFile = new File("../utils/src/main/resources/UserCert.pem");
+        File clientKeyFile = new File("../utils/src/main/resources/UserKey.pem");
 
         try {
 

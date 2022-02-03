@@ -24,9 +24,9 @@ public class DatabaseBackupServer {
             System.out.println(dir);
 
             // TODO: IN MAVEN TERMINAL: "../utils/src/main/resources/CACert.pem"
-            File CAsCertFile = new File("utils/src/main/resources/CACert.pem");   // CAfile
-            File dbBackupServerCertFile = new File("utils/src/main/resources/DatabaseBackupServerCert.pem"); //certChainFile
-            File dbBackupServerKeyFile = new File("utils/src/main/resources/DatabaseBackupServerKey.pem"); //privateKeyFile
+            File CAsCertFile = new File("../utils/src/main/resources/CACert.pem");   // CAfile
+            File dbBackupServerCertFile = new File("../utils/src/main/resources/DatabaseBackupServerCert.pem"); //certChainFile
+            File dbBackupServerKeyFile = new File("../utils/src/main/resources/DatabaseBackupServerKey.pem"); //privateKeyFile
 
             /* MUTUAL TLS AUTHENTICATION */
             SslContextBuilder sslContextBuilder = SslContextBuilder.forServer(dbBackupServerCertFile, dbBackupServerKeyFile)

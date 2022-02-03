@@ -41,9 +41,9 @@ public class ServerApp {
                             .addService(new ServerImpl()).build(); */
 
 
-            File CAsCertFile = new File("utils/src/main/resources/CACert.pem");   // CAfile
-            File serverCertFile = new File("utils/src/main/resources/ServerCert.pem"); //certChainFile
-            File serverKeyFile = new File("utils/src/main/resources/ServerKey.pem"); //privateKeyFile
+            File CAsCertFile = new File("../utils/src/main/resources/CACert.pem");   // CAfile
+            File serverCertFile = new File("../utils/src/main/resources/ServerCert.pem"); //certChainFile
+            File serverKeyFile = new File("../utils/src/main/resources/ServerKey.pem"); //privateKeyFile
 
             /* MUTUAL TLS AUTHENTICATION */
             SslContextBuilder sslContextBuilder = SslContextBuilder.forServer(serverCertFile, serverKeyFile)
@@ -69,9 +69,9 @@ public class ServerApp {
 
     public static void connectToDatabaseBackupServer() {
 
-        File CAsCertFile = new File("utils/src/main/resources/CACert.pem");
-        File serverCertFile = new File("utils/src/main/resources/UserCert.pem");
-        File serverKeyFile = new File("utils/src/main/resources/UserKey.pem");
+        File CAsCertFile = new File("../utils/src/main/resources/CACert.pem");
+        File serverCertFile = new File("../utils/src/main/resources/UserCert.pem");
+        File serverKeyFile = new File("../utils/src/main/resources/UserKey.pem");
 
         try {
 
