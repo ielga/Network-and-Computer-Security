@@ -1,5 +1,5 @@
 #!/bin/bash
-# mysqldump -u root -psirsRDpasswd47dif remoteDocsDB > "Documents\testingBackup5.sql"
+# mysqldump -u root -psirsRDpasswd47dif remoteDocsDB > "Documents/testingBackup5.sql"
 
 backupFolder=server/src/main/DataBaseBackups
 user=root 

@@ -1,4 +1,4 @@
-package server;
+package databaseServer;
 
 import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
@@ -27,7 +27,7 @@ public class DatabaseBackupServerImpl extends DatabaseBackupServiceGrpc.Database
         System.out.println("File with size: " + fileChunkSize);
 
         try {
-            File dir = new File("server/src/main/DatabaseServerStorage");
+            File dir = new File("src/main/DatabaseServerStorage");
 
             FilenameFilter filter = (f, name) -> name.endsWith("sql");
             File[] files = dir.listFiles(filter);
@@ -35,7 +35,7 @@ public class DatabaseBackupServerImpl extends DatabaseBackupServiceGrpc.Database
             if (files != null) {
                 Arrays.sort(files, Comparator.comparingLong(File::lastModified));
             }
-            String filePath = "server/src/main/DatabaseServerStorage/dbServerBackup_" + files.length + ".sql";
+            String filePath = "src/main/DatabaseServerStorage/dbServerBackup_" + files.length + ".sql";
 
             fileChunk.writeTo(sqlFileData);
 

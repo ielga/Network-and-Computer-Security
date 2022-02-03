@@ -1,4 +1,4 @@
-package server;
+package databaseServer;
 
 
 import io.grpc.Server;
@@ -18,12 +18,11 @@ public class DatabaseBackupServer {
             for (String arg : args) System.out.println("Args are: " + arg);
 
             String dir = System.getProperty("user.dir");
-
-            // directory from where the program was launched
-            // e.g /home/mkyong/projects/core-java/java-io
             System.out.println(dir);
 
-            // TODO: IN MAVEN TERMINAL: "../utils/src/main/resources/CACert.pem"
+            String host = args[0];
+            int port = Integer.parseInt(args[1]);
+
             File CAsCertFile = new File("../utils/src/main/resources/CACert.pem");   // CAfile
             File dbBackupServerCertFile = new File("../utils/src/main/resources/DatabaseBackupServerCert.pem"); //certChainFile
             File dbBackupServerKeyFile = new File("../utils/src/main/resources/DatabaseBackupServerKey.pem"); //privateKeyFile
@@ -34,7 +33,7 @@ public class DatabaseBackupServer {
                                                 .trustManager(CAsCertFile);
             SslContext sslContext = GrpcSslContexts.configure(sslContextBuilder).build();
 
-            Server server =  NettyServerBuilder.forPort((8445))
+            Server server =  NettyServerBuilder.forPort((port))
                             .sslContext(sslContext)
                             .addService(new DatabaseBackupServerImpl()).build();
 
@@ -44,7 +43,7 @@ public class DatabaseBackupServer {
 
         }
         catch(Exception e) {
-            System.out.println("Database Backup Server: " );
+            System.out.println("Database Backup Server: " + e.getMessage());
             e.printStackTrace();
         }
     }

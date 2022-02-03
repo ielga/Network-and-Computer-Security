@@ -38,7 +38,10 @@ public class ClientApp extends JFrame {
     }
 
     public static void main(String args[]) {
-        clientService = new ClientService();
+        System.out.println("args:" + args[0] + ",  " + args[1]);
+        String serverHost = args[0];
+        int serverPort = Integer.parseInt(args[1]);
+        clientService = new ClientService(serverHost, serverPort);
         ClientApp clientApp = new ClientApp();
 
     }

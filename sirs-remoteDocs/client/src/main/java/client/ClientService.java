@@ -41,7 +41,7 @@ public class ClientService {
     //public PublicKey pubKey;
 
 
-    public ClientService() {
+    public ClientService(String serverHost, int serverPort) {
         File CAsCertFile = new File("../utils/src/main/resources/CACert.pem");
         File clientCertFile = new File("../utils/src/main/resources/UserCert.pem");
         File clientKeyFile = new File("../utils/src/main/resources/UserKey.pem");
@@ -54,18 +54,9 @@ public class ClientService {
                     .build();
 
             managedChannel = NettyChannelBuilder
-                    // This 0.0.0.0 address is the one that matches the one put into utils../resources/"server-ext.cnf"
-                    .forAddress("0.0.0.0", 8446)
+                    .forAddress(serverHost, serverPort)
                     .sslContext(sslContext)
                     .build();
-
-            /* OTHERS:
-            ChannelCredentials creds = TlsChannelCredentials.newBuilder()
-                    .trustManager(CAsCertFile)
-                    .build();
-            managedChannel = Grpc.newChannelBuilder("192.168.1.164:8443", creds)
-                    .build(); */
-
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -324,28 +315,13 @@ public class ClientService {
                 String ownerPrivateKeyPath = "client/src/main/resources/PrivateKey_" + owner;
                 pubKey = cg.loadPublicKey(ownerPubKeyPath);
                 privKey = cg.loadPrivateKey(ownerPrivateKeyPath);
-                System.out.println("PRIVATE KEY: " + Arrays.toString(privKey.getEncoded()));
-                System.out.println("PUBLIC KEY OWWNER: " + Arrays.toString(pubKey.getEncoded()));
-
             }
             else {
                 String contributorPubKeyPath = "client/src/main/resources/PublicKey_" + username;
                 String contributorPrivateKeyPath = "client/src/main/resources/PrivateKey_" + username;
                 pubKey = cg.loadPublicKey(contributorPubKeyPath);
                 privKey = cg.loadPrivateKey(contributorPrivateKeyPath);
-                System.out.println("PRIVATE KEY CONTRIBUTOR: " + Arrays.toString(privKey.getEncoded()));
-                System.out.println("PUBLIC KEY CONTRIBUTOR: " + Arrays.toString(pubKey.getEncoded()));
 
-                /*
-                // get public key of contributor
-                String usernamePrivateKeyPath = "client/src/main/resources/PrivateKey_" + username;
-                privKey = cg.loadPrivateKey(usernamePrivateKeyPath);
-                getContributorPublicKeyRequest request2 = getContributorPublicKeyRequest.newBuilder().setContributor(username).build();
-                getContributorPublicKeyResponse response2 = serviceBlockingStub.getContributorPublicKey(request2);
-                userPublicKey = response2.getContributorPublicKey().toByteArray();
-                pubKey = cg.convertBytesToPublicKey(userPublicKey);
-                System.out.println("PRIVATE KEY: " + Arrays.toString(privKey.getEncoded()));
-                System.out.println("PUBLIC KEY CONTRIBUTOR: " + Arrays.toString(pubKey.getEncoded())); */
             }
 
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
@@ -364,20 +340,15 @@ public class ClientService {
             //String originalContentText = Arrays.toString(originalContent);
 
             String originalContent = new String(cipher.doFinal(Base64.getDecoder().decode(content)), StandardCharsets.UTF_8);
-            System.out.println("CLient Service: original content is: " + originalContent);
-            System.out.println("ContentDecrypted: " + content);
 
+            System.out.println("ContentDecrypted: " + content);
 
             return originalContent;
 
         } catch (Exception e) {
             System.out.println("ClientService: Get Doc Content: " + e.getMessage());
         }
-        //getContributorDocumentsResponse response = serviceBlockingStub.getDocumentContent(request);
 
-        //getContributorDocumentsResponse response = serviceBlockingStub.getDocumentContent(request);
-        //String responseMessage = response.getC
-        //return responseMessage;
         return null;
     }
 
@@ -416,7 +387,6 @@ public class ClientService {
                     String contributorPrivateKeyPath = "client/src/main/resources/PrivateKey_" + contributor;
 
                     privKey = cg.loadPrivateKey(contributorPrivateKeyPath);
-
 
                 }
 
@@ -472,13 +442,13 @@ public class ClientService {
                                                         .build();
 
                 Iterator <getContributorDocumentsResponse> responseIterator = serviceBlockingStub.getContributorDocuments(request);
+                loggedInUser.cleanFilesAsContributorList();
                 while(responseIterator.hasNext()){
 
                     getContributorDocumentsResponse response = responseIterator.next();
                     String owner = response.getOwner() ;
                     String filename = response.getFilename();
                     String permission = response.getPermission();
-                    loggedInUser.cleanFilesAsContributorList();
                     loggedInUser.addFileAsContributor(filename, owner, permission);
                 }
 
@@ -497,8 +467,8 @@ public class ClientService {
     public void getOwnerDocuments() {
 
         try {
-            String contributor = user_owner;
-            if (!contributor.isEmpty()) {
+            String owner = this.loggedInUser.username;
+            if (!owner.isEmpty()) {
                 RemoteDocsServiceGrpc.RemoteDocsServiceBlockingStub serviceBlockingStub = RemoteDocsServiceGrpc.newBlockingStub(managedChannel);
 
                 getOwnerDocumentsRequest request = getOwnerDocumentsRequest.newBuilder()
@@ -506,19 +476,14 @@ public class ClientService {
                         .build();
 
                 Iterator <getOwnerDocumentsResponse> responseIterator = serviceBlockingStub.getOwnerDocuments(request);
+                loggedInUser.cleanFilesAsOwnerList();
                 while(responseIterator.hasNext()){
 
                     getOwnerDocumentsResponse response = responseIterator.next();
                     String filename = response.getFilename();
-                    loggedInUser.cleanFilesAsOwnerList();
                     loggedInUser.addFileAsOwner(filename);
                 }
 
-                Log("ClientService: Get Documents as Owner - ", OK);
-                Log("ClientService: Get Documents as Owner - ", OK);
-                Log("ClientService: Get Documents as Owner - ", OK);
-                Log("ClientService: Get Documents as Owner - ", OK);
-                Log("ClientService: Get Documents as Owner - ", OK);
                 Log("ClientService: Get Documents as Owner - ", OK);
 
             }

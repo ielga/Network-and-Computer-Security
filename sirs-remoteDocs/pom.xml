@@ -19,6 +19,7 @@
         <module>client</module>
         <module>server</module>
         <module>utils</module>
+        <module>databaseServer</module>
     </modules>
     <dependencies>
         <dependency>

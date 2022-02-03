@@ -35,15 +35,18 @@ public class ServerApp {
 
     public static void main(String[] args) {
         try {
-           /*  System.out.println("server.Server is loading...");
 
-              Server server = ServerBuilder.forPort(8080)
-                            .addService(new ServerImpl()).build(); */
-
+            for (String arg : args) System.out.println("Args are: " + arg);
 
             File CAsCertFile = new File("../utils/src/main/resources/CACert.pem");   // CAfile
             File serverCertFile = new File("../utils/src/main/resources/ServerCert.pem"); //certChainFile
             File serverKeyFile = new File("../utils/src/main/resources/ServerKey.pem"); //privateKeyFile
+
+            String host = args[0];
+            int port = Integer.parseInt(args[1]);
+            String dbHost = args[2];
+            int dbPort = Integer.parseInt(args[3]);
+
 
             /* MUTUAL TLS AUTHENTICATION */
             SslContextBuilder sslContextBuilder = SslContextBuilder.forServer(serverCertFile, serverKeyFile)
@@ -51,11 +54,11 @@ public class ServerApp {
                     .trustManager(CAsCertFile);
             SslContext sslContext = GrpcSslContexts.configure(sslContextBuilder).build();
 
-            Server server =  NettyServerBuilder.forPort((8446))
-                    .sslContext(sslContext)
-                    .addService(new ServerImpl()).build();
+            Server server =  NettyServerBuilder.forPort((port))
+                            .sslContext(sslContext)
+                            .addService(new ServerImpl()).build();
 
-            connectToDatabaseBackupServer();
+            connectToDatabaseBackupServer(dbHost, dbPort);
             ServerApp.startAutomaticDatabaseBackup();
 
             server.start();
@@ -67,7 +70,7 @@ public class ServerApp {
         }
     }
 
-    public static void connectToDatabaseBackupServer() {
+    public static void connectToDatabaseBackupServer(String dbHost, int dbPort) {
 
         File CAsCertFile = new File("../utils/src/main/resources/CACert.pem");
         File serverCertFile = new File("../utils/src/main/resources/UserCert.pem");
@@ -81,11 +84,9 @@ public class ServerApp {
                     .build();
 
             databaseChannel = NettyChannelBuilder
-                    // This 0.0.0.0 address is the one that matches the one put into utils../resources/"server-ext.cnf"
-                    .forAddress("0.0.0.0", 8445)
+                    .forAddress(dbHost, dbPort)
                     .sslContext(sslContext)
                     .build();
-
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -109,8 +110,9 @@ public class ServerApp {
             // String dir = System.getProperty("user.dir");
             // System.out.println("DIR: "+ dir);
 
-            String filePath = "server/src/main/resources/DataBaseBackup.sh";
+            String filePath = "src/main/resources/DataBaseBackup.sh";
             File file = new File(filePath);
+
 
             if(!file.isFile()){
                 throw new IllegalArgumentException("The file " + filePath + " does not exist");
@@ -129,7 +131,6 @@ public class ServerApp {
                 System.out.println("Backing up database files...");
             }
 
-
         } catch (IOException e) {
             System.out.println("Database Backup Server: ");
             e.printStackTrace();
@@ -138,13 +139,13 @@ public class ServerApp {
 
     public static void sendSQLbackup() {
         try {
-            File dir = new File("server/src/main/DataBaseBackups");
+            File dir = new File("src/main/DataBaseBackups");
             File[] files = dir.listFiles();
             String filePath = null;
 
             if (files != null) {
                 Arrays.sort(files, Comparator.comparingLong(File::lastModified));
-                filePath = "server/src/main/DataBaseBackups/" + files[files.length-1].getName();
+                filePath = "src/main/DataBaseBackups/" + files[files.length-1].getName();
             }
 
             DatabaseBackupServiceGrpc.DatabaseBackupServiceBlockingStub serviceBlockingStub = DatabaseBackupServiceGrpc.newBlockingStub(databaseChannel);
