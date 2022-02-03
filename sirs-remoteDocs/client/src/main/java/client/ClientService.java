@@ -37,8 +37,8 @@ public class ClientService {
     private User loggedInUser;
     public String user_owner;
 
-    private PrivateKey privKey;
-    public PublicKey pubKey;
+    //private PrivateKey privKey;
+    //public PublicKey pubKey;
 
 
     public ClientService() {
@@ -86,8 +86,8 @@ public class ClientService {
                      // Generating
                      CryptoGenerator cg = new CryptoGenerator();
                      KeyPair pair = cg.GenerateKeys(4096);
-                     this.privKey = pair.getPrivate();
-                     this.pubKey = pair.getPublic();
+                     PrivateKey privKey = pair.getPrivate();
+                     PublicKey pubKey = pair.getPublic();
 
 
                      //String pubKeyEncoded = Base64.getEncoder().encodeToString( this.pubKey.getEncoded() );
@@ -95,7 +95,7 @@ public class ClientService {
 
                      registerUserRequest request = registerUserRequest.newBuilder()
                                                         .setUsername(username).setPassword(password)
-                                                        .setPublicKey(ByteString.copyFrom(this.pubKey.getEncoded()))
+                                                        .setPublicKey(ByteString.copyFrom(pubKey.getEncoded()))
                                                         .build();
                      registerUserResponse response = serviceBlockingStub.registerUser(request);
 
@@ -106,8 +106,8 @@ public class ClientService {
                          // If the register was successful, then we save it in the file
                          String publicKeyPath = "client/src/main/resources/PublicKey_" + username;
                          String privateKeyPath = "client/src/main/resources/PrivateKey_" + username;
-                         cg.createKeyFile(publicKeyPath, this.pubKey.getEncoded());
-                         cg.createKeyFile(privateKeyPath, this.privKey.getEncoded());
+                         cg.createKeyFile(publicKeyPath, pubKey.getEncoded());
+                         cg.createKeyFile(privateKeyPath, privKey.getEncoded());
                      }
 
                      return responseMessage;
@@ -164,19 +164,19 @@ public class ClientService {
             if (!owner.isEmpty() && !filename.isEmpty()) {
                 RemoteDocsServiceGrpc.RemoteDocsServiceBlockingStub serviceBlockingStub = RemoteDocsServiceGrpc.newBlockingStub(managedChannel);
 
+                /* Creating document keys */
                 KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
                 kpg.initialize(512);
                 KeyPair keyPair = kpg.generateKeyPair();
 
                 PublicKey docPuKey = keyPair.getPublic();
                 PrivateKey docPrKey = keyPair.getPrivate();
-
                 Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
                 cipher.init(Cipher.ENCRYPT_MODE, docPuKey);
-
                 byte[] cipherContent  = cipher.doFinal(content.getBytes(StandardCharsets.UTF_8));
                 String newContent = Base64.getEncoder().encodeToString(cipherContent);
 
+                /* Getting public key of owner */
                 String ownerPubKeyPath = "client/src/main/resources/PublicKey_" + owner;
                 CryptoGenerator cg = new CryptoGenerator();
                 PublicKey pubKey = cg.loadPublicKey(ownerPubKeyPath);
@@ -315,27 +315,37 @@ public class ClientService {
             byte[] userPublicKey;
             byte[] userPrivateKey;
             CryptoGenerator cg = new CryptoGenerator();
+            PublicKey pubKey;
+            PrivateKey privKey;
 
             if(owner.equals(username)) {
                 // we are the owners - load our public keys
                 String ownerPubKeyPath = "client/src/main/resources/PublicKey_" + owner;
                 String ownerPrivateKeyPath = "client/src/main/resources/PrivateKey_" + owner;
-                PublicKey pubKey = cg.loadPublicKey(ownerPubKeyPath);
-                PrivateKey privKey = cg.loadPrivateKey(ownerPrivateKeyPath);
+                pubKey = cg.loadPublicKey(ownerPubKeyPath);
+                privKey = cg.loadPrivateKey(ownerPrivateKeyPath);
                 System.out.println("PRIVATE KEY: " + Arrays.toString(privKey.getEncoded()));
                 System.out.println("PUBLIC KEY OWWNER: " + Arrays.toString(pubKey.getEncoded()));
 
             }
             else {
+                String contributorPubKeyPath = "client/src/main/resources/PublicKey_" + username;
+                String contributorPrivateKeyPath = "client/src/main/resources/PrivateKey_" + username;
+                pubKey = cg.loadPublicKey(contributorPubKeyPath);
+                privKey = cg.loadPrivateKey(contributorPrivateKeyPath);
+                System.out.println("PRIVATE KEY CONTRIBUTOR: " + Arrays.toString(privKey.getEncoded()));
+                System.out.println("PUBLIC KEY CONTRIBUTOR: " + Arrays.toString(pubKey.getEncoded()));
+
+                /*
                 // get public key of contributor
-                String ownerPrivateKeyPath = "client/src/main/resources/PrivateKey_" + owner;
-                PrivateKey privKey = cg.loadPrivateKey(ownerPrivateKeyPath);
+                String usernamePrivateKeyPath = "client/src/main/resources/PrivateKey_" + username;
+                privKey = cg.loadPrivateKey(usernamePrivateKeyPath);
                 getContributorPublicKeyRequest request2 = getContributorPublicKeyRequest.newBuilder().setContributor(username).build();
                 getContributorPublicKeyResponse response2 = serviceBlockingStub.getContributorPublicKey(request2);
                 userPublicKey = response2.getContributorPublicKey().toByteArray();
-                PublicKey pubKey = cg.convertBytesToPublicKey(userPublicKey);
+                pubKey = cg.convertBytesToPublicKey(userPublicKey);
                 System.out.println("PRIVATE KEY: " + Arrays.toString(privKey.getEncoded()));
-                System.out.println("PUBLIC KEY CONTRIBUTOR: " + Arrays.toString(pubKey.getEncoded()));
+                System.out.println("PUBLIC KEY CONTRIBUTOR: " + Arrays.toString(pubKey.getEncoded())); */
             }
 
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
@@ -388,22 +398,15 @@ public class ClientService {
                 editDocContentResponse response = serviceBlockingStub.editDocumentContent(request);
 
                 String responseMessage = response.getEditDocumentResponse();
-                if(responseMessage.equals(CONTENT_UPDATED)){
-                    Log("ClientService: Edit Document Content - ", responseMessage);
-                    return responseMessage;
-                }
-                else if (responseMessage.equals(USER_DOES_NOT_HAVE_PERMISSION)){
-                    Log("ClientService: Edit Document Content - ", responseMessage);
-
-                    return responseMessage;
-                }
-                else if (responseMessage.equals(EDIT_CONTENT_DENIED)){
-                    Log("ClientService: Edit Document Content - ", responseMessage);
-                    return responseMessage;
-                }
-                else{
-                    Log("ClientService: Edit Document Content -", "An internal error has occured!");
-                    return responseMessage;
+                switch (responseMessage) {
+                    case CONTENT_UPDATED:
+                    case USER_DOES_NOT_HAVE_PERMISSION:
+                    case EDIT_CONTENT_DENIED:
+                        Log("ClientService: Edit Document Content - ", responseMessage);
+                        return responseMessage;
+                    default:
+                        Log("ClientService: Edit Document Content -", "An internal error has occured!");
+                        return responseMessage;
                 }
             }
             else {
@@ -499,6 +502,8 @@ public class ClientService {
 
             byte[] contributorPublicKeyBytes = response.getContributorPublicKey().toByteArray();
 
+
+            System.out.println("Get ");
 
             return contributorPublicKeyBytes;
 
