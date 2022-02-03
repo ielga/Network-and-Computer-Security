@@ -2,10 +2,8 @@ package client;
 
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
+import java.io.*;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -135,9 +133,16 @@ public class CryptoGenerator {
 
     public PublicKey loadPublicKey(String publicKeyPath) {
         try {
-            FileInputStream publicKeyFile = new FileInputStream(publicKeyPath);
+            InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(publicKeyPath);
+            if (in == null) {
+                return null;
+            }
+            File tempFile = File.createTempFile(String.valueOf(in.hashCode()), ".tmp");
+            tempFile.deleteOnExit();
+
+            FileInputStream publicKeyFile = new FileInputStream(tempFile);
             byte[] publicEncoded = new byte[publicKeyFile.available()];
-            publicKeyFile.read(publicEncoded);
+            publicKeyFile.read(publicEncoded);;
             publicKeyFile.close();
 
             X509EncodedKeySpec publicSpec = new X509EncodedKeySpec(publicEncoded);
