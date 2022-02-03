@@ -381,19 +381,60 @@ public class ClientService {
         return null;
     }
 
-    public String editDocumentContent(String filename, String contributor, String owner, String newContent){
+
+    public String editDocumentContent(String filename, String contributor, String owner, String newContent) {
         try {
+
             if (!filename.isEmpty() && !owner.isEmpty() && !contributor.isEmpty()) {
                 RemoteDocsServiceGrpc.RemoteDocsServiceBlockingStub serviceBlockingStub = RemoteDocsServiceGrpc.newBlockingStub(managedChannel);
 
-               /* getDocumentContentRequest request_docs = getDocumentContentRequest.newBuilder()
-                                                        .setFilename(filename).setOwner(owner)
-                                                        .setUsername(contributor).build();*/
+                PublicKey pubKey;
+                PrivateKey privKey;
+                CryptoGenerator cg = new CryptoGenerator();
+                byte[] writeKey;
 
-                //getContributorDocumentsResponse response_docs = serviceBlockingStub.editDocumentContent(request docs);
+                if(owner.equals(contributor)) {
+                    getOwnerReadAndWriteKeyRequest request1 = getOwnerReadAndWriteKeyRequest.newBuilder()
+                            .setOwner(owner).setFilename(filename).build();
+                    getOwnerReadAndWriteKeyResponse response1 = serviceBlockingStub.getOwnerReadAndWriteKey(request1);
+
+                    writeKey = response1.getOwnerWriteKey().toByteArray(); //(PubDocument)PublicOwner
+
+                    String ownerPrivateKeyPath = "client/src/main/resources/PrivateKey_" + owner;
+
+                    privKey = cg.loadPrivateKey(ownerPrivateKeyPath);
+
+
+                } else { // the contributor is editing
+                    getContributorReadAndWriteKeyRequest request1 = getContributorReadAndWriteKeyRequest.newBuilder()
+                            .setContributor(contributor).setFilename(filename).setOwner(owner).build();
+                    getContributorReadAndWriteKeyResponse response1 = serviceBlockingStub.getContributorReadAndWriteKey(request1);
+
+                    writeKey = response1.getContributorWriteKey().toByteArray(); //(PubDocument)PublicOwner
+
+
+                    String contributorPrivateKeyPath = "client/src/main/resources/PrivateKey_" + contributor;
+
+                    privKey = cg.loadPrivateKey(contributorPrivateKeyPath);
+
+
+                }
+
+                Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+
+                cipher.init(Cipher.DECRYPT_MODE, privKey);
+                byte[] publicDocKeyBytes = cipher.doFinal(writeKey);
+
+                PublicKey docPubKey = cg.convertBytesToPublicKey(publicDocKeyBytes);
+
+                cipher.init(Cipher.ENCRYPT_MODE, docPubKey);
+                byte[] cipherContent  = cipher.doFinal(newContent.getBytes(StandardCharsets.UTF_8));
+                String editedContent = Base64.getEncoder().encodeToString(cipherContent);
+
+
                 editDocContentRequest request = editDocContentRequest.newBuilder()
                                             .setFilename(filename).setContributor(contributor)
-                                            .setOwner(owner).setNewContent(newContent)
+                                            .setOwner(owner).setNewContent(editedContent)
                                             .build();
                 editDocContentResponse response = serviceBlockingStub.editDocumentContent(request);
 
@@ -502,8 +543,6 @@ public class ClientService {
 
             byte[] contributorPublicKeyBytes = response.getContributorPublicKey().toByteArray();
 
-
-            System.out.println("Get ");
 
             return contributorPublicKeyBytes;
 

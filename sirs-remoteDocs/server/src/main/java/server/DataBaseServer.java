@@ -71,6 +71,10 @@ public class DataBaseServer {
 
     }
 
+    public ResultSet getContributorWriteAndReadKey(String contributor, String filename, String owner){
+        return Queries.getContributorWriteAndReadKey(conn, contributor, filename, owner);
+
+    }
 
     public String addDocumentContributor(String owner, String contributor, String filename, String permission,
                                          String loggedInUser, byte[] contributorReadKey, byte[] contributorWriteKey){

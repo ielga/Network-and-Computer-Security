@@ -134,6 +134,27 @@ public class Queries {
         return null;
     }
 
+
+    public static ResultSet getContributorWriteAndReadKey(Connection conn, String contributor, String filename, String owner) {
+        try {
+
+            PreparedStatement stmt = conn.prepareStatement("SELECT readKey, writeKey FROM usersDocs where contributor = ? and filename = ? and owner = ? ");
+            stmt.setString(1, contributor);
+            stmt.setString(2, filename);
+            stmt.setString(3, owner);
+
+
+            if(stmt.executeQuery().next()){
+                return stmt.getResultSet();
+            }
+        } catch (Exception e) {
+            System.out.println(OWNER_READ_WRITE_ERROR);
+
+        }
+        return null;
+    }
+
+
     public static String editDocumentContent(Connection conn, String filename, String contributor, String owner, String newContent){
         try{
 
