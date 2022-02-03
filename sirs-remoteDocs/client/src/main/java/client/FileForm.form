@@ -68,7 +68,9 @@
       </grid>
       <component id="18a24" class="javax.swing.JButton" binding="createNewFileButton" default-binding="true">
         <constraints>
-          <grid row="2" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="2" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+            <preferred-size width="131" height="32"/>
+          </grid>
         </constraints>
         <properties>
           <text value="Create New File"/>
@@ -109,23 +111,23 @@
           <editable value="false"/>
         </properties>
       </component>
-      <component id="1ce26" class="javax.swing.JTextArea" binding="textContent">
-        <constraints>
-          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="150"/>
-          </grid>
-        </constraints>
-        <properties>
-          <editable value="false"/>
-          <text value=""/>
-        </properties>
-      </component>
       <component id="68f9c" class="javax.swing.JButton" binding="shareFileButton" default-binding="true">
         <constraints>
           <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <text value="Share File"/>
+        </properties>
+      </component>
+      <component id="cafaa" class="javax.swing.JTextField" binding="textContent">
+        <constraints>
+          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="-1"/>
+          </grid>
+        </constraints>
+        <properties>
+          <background color="-13141061"/>
+          <text value=""/>
         </properties>
       </component>
     </children>
