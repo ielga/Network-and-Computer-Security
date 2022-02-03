@@ -9,7 +9,6 @@ import static DataBaseLib.Messages.*;
 
 public class Login extends JFrame {
     private JPanel Login;
-    private JLabel UserLogin;
     private JTextField textUserName;
     private JPasswordField textPassword;
     private JButton loginButton;
