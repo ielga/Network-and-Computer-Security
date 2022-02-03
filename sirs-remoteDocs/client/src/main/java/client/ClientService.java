@@ -314,27 +314,29 @@ public class ClientService {
             byte[] userWriteKey = response.getWriteKey().toByteArray();
             byte[] userPublicKey;
             byte[] userPrivateKey;
+            CryptoGenerator cg = new CryptoGenerator();
 
-           // if(owner.equals(username)) {
+            if(owner.equals(username)) {
                 // we are the owners - load our public keys
                 String ownerPubKeyPath = "client/src/main/resources/PublicKey_" + owner;
                 String ownerPrivateKeyPath = "client/src/main/resources/PrivateKey_" + owner;
-                CryptoGenerator cg = new CryptoGenerator();
                 PublicKey pubKey = cg.loadPublicKey(ownerPubKeyPath);
                 PrivateKey privKey = cg.loadPrivateKey(ownerPrivateKeyPath);
                 System.out.println("PRIVATE KEY: " + Arrays.toString(privKey.getEncoded()));
-                System.out.println("PUBLIC KEY: " + Arrays.toString(pubKey.getEncoded()));
-                userPublicKey = pubKey.getEncoded();
-                userPrivateKey = privKey.getEncoded();
+                System.out.println("PUBLIC KEY OWWNER: " + Arrays.toString(pubKey.getEncoded()));
 
-            //}
-            /* else {
+            }
+            else {
                 // get public key of contributor
+                String ownerPrivateKeyPath = "client/src/main/resources/PrivateKey_" + owner;
+                PrivateKey privKey = cg.loadPrivateKey(ownerPrivateKeyPath);
                 getContributorPublicKeyRequest request2 = getContributorPublicKeyRequest.newBuilder().setContributor(username).build();
                 getContributorPublicKeyResponse response2 = serviceBlockingStub.getContributorPublicKey(request2);
-
                 userPublicKey = response2.getContributorPublicKey().toByteArray();
-            } */
+                PublicKey pubKey = cg.convertBytesToPublicKey(userPublicKey);
+                System.out.println("PRIVATE KEY: " + Arrays.toString(privKey.getEncoded()));
+                System.out.println("PUBLIC KEY CONTRIBUTOR: " + Arrays.toString(pubKey.getEncoded()));
+            }
 
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             //TODO: FIX FOR WRITE OR READ- HERE ONLY FOR WRITING
@@ -347,17 +349,19 @@ public class ClientService {
             PrivateKey privDocKey = cg.convertBytesToPrivateKey(privDocKeyBytes);
             cipher.init(Cipher.DECRYPT_MODE, privDocKey);
 
-            byte[] contentBytes = Base64.getDecoder().decode(content);
-            byte[] originalContent = cipher.doFinal(contentBytes);
-            String originalContentText = Arrays.toString(originalContent);
+            //byte[] contentBytes = Base64.getDecoder().decode(content.getBytes(StandardCharsets.UTF_8));
+            //byte[] originalContent = cipher.doFinal(contentBytes);
+            //String originalContentText = Arrays.toString(originalContent);
 
-            System.out.println("CLient Service: original content is: " + originalContentText);
+            String originalContent = new String(cipher.doFinal(Base64.getDecoder().decode(content)), StandardCharsets.UTF_8);
+            System.out.println("CLient Service: original content is: " + originalContent);
+            System.out.println("ContentDecrypted: " + content);
 
 
-            return originalContentText;
+            return originalContent;
 
         } catch (Exception e) {
-            System.out.println("ClientService: Get Doc Content" + e.getMessage());
+            System.out.println("ClientService: Get Doc Content: " + e.getMessage());
         }
         //getContributorDocumentsResponse response = serviceBlockingStub.getDocumentContent(request);
 
@@ -431,7 +435,7 @@ public class ClientService {
                     String filename = response.getFilename();
                     String permission = response.getPermission();
                     loggedInUser.cleanFilesAsContributorList();
-                    loggedInUser.addFileAsContributor(owner, filename, permission);
+                    loggedInUser.addFileAsContributor(filename, owner, permission);
                 }
 
                 Log("ClientService: Get Documents as Contributor - ", OK);
